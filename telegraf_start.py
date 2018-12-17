@@ -21,20 +21,22 @@ SOFTWARE.
 
 import os
 import subprocess
-from DataAgent.da_grpc.client.py.client_internal.client import GrpcInternalClient
+from DataAgent.da_grpc.client.py.client_internal.client \
+    import GrpcInternalClient
+
+CLIENT_CERT = "/etc/ssl/grpc_int_ssl_secrets/grpc_internal_client_certificate.pem"
+CLIENT_KEY = "/etc/ssl/grpc_int_ssl_secrets/grpc_internal_client_key.pem"
+CA_CERT = "/etc/ssl/grpc_int_ssl_secrets/ca_certificate.pem"
 
 if __name__ == '__main__':
     try:
-        client = GrpcInternalClient()
+        client = GrpcInternalClient(CLIENT_CERT, CLIENT_KEY, CA_CERT)
         config = client.GetConfigInt("InfluxDBCfg")
-        
         os.environ["INFLUXDB_USERNAME"] = config["UserName"]
         os.environ["INFLUXDB_PASSWORD"] = config["Password"]
         os.environ["INFLUXDB_DBNAME"] = config["DBName"]
 
         subprocess.call(["telegraf", "-config=Telegraf/Telegraf.conf"])
-       
- 
     except Exception as e:
         print(e)
         os._exit(1)
