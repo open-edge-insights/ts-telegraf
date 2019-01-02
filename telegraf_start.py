@@ -20,15 +20,47 @@ SOFTWARE.
 """
 
 import os
+import datetime
+import time
+import argparse
+import logging
 import subprocess
 from DataAgent.da_grpc.client.py.client_internal.client \
     import GrpcInternalClient
+from Util.log import configure_logging, LOG_LEVELS
+from Util.util import create_decrypted_pem_files
 
-CLIENT_CERT = "/etc/ssl/grpc_int_ssl_secrets/grpc_internal_client_certificate.pem"
-CLIENT_KEY = "/etc/ssl/grpc_int_ssl_secrets/grpc_internal_client_key.pem"
-CA_CERT = "/etc/ssl/grpc_int_ssl_secrets/ca_certificate.pem"
+GRPC_CERTS_PATH = "/etc/ssl/grpc_int_ssl_secrets"
+CLIENT_CERT = GRPC_CERTS_PATH + "/grpc_internal_client_certificate.pem"
+CLIENT_KEY = GRPC_CERTS_PATH + "/grpc_internal_client_key.pem"
+CA_CERT = GRPC_CERTS_PATH + "/ca_certificate.pem"
+
+
+def parse_args():
+    """Parse command line arguments
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--log', choices=LOG_LEVELS.keys(), default='INFO',
+                        help='Logging level (df: INFO)')
+    parser.add_argument('--log-dir', dest='log_dir', default='logs',
+                        help='Directory to for log files')
+
+    return parser.parse_args()
+
 
 if __name__ == '__main__':
+
+    # Parse command line arguments
+    args = parse_args()
+
+    currentDateTime = str(datetime.datetime.now())
+    listDateTime = currentDateTime.split(" ")
+    currentDateTime = "_".join(listDateTime)
+    logFileName = 'telegraf' + currentDateTime + '.log'
+
+    log = configure_logging(args.log.upper(), logFileName, args.log_dir,
+                            __name__)
+
     try:
         client = GrpcInternalClient(CLIENT_CERT, CLIENT_KEY, CA_CERT)
         config = client.GetConfigInt("InfluxDBCfg")
@@ -36,7 +68,11 @@ if __name__ == '__main__':
         os.environ["INFLUXDB_PASSWORD"] = config["Password"]
         os.environ["INFLUXDB_DBNAME"] = config["DBName"]
 
+        srcFiles = [CA_CERT]
+        filesToDecrypt = ["/etc/ssl/ca/ca_certificate.pem"]
+        create_decrypted_pem_files(srcFiles, filesToDecrypt)
+
         subprocess.call(["telegraf", "-config=Telegraf/Telegraf.conf"])
     except Exception as e:
-        print(e)
+        log.error(e)
         os._exit(1)
