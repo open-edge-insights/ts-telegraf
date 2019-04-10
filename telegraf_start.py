@@ -61,6 +61,7 @@ if __name__ == '__main__':
     log = configure_logging(args.log.upper(), logFileName, args.log_dir,
                             __name__)
 
+    log.info("=============== STARTING telegraf ===============")
     try:
         client = GrpcInternalClient(CLIENT_CERT, CLIENT_KEY, CA_CERT)
         config = client.GetConfigInt("InfluxDBCfg")
@@ -74,5 +75,5 @@ if __name__ == '__main__':
 
         subprocess.call(["telegraf", "-config=Telegraf/Telegraf.conf"])
     except Exception as e:
-        log.error(e)
+        log.error(e, exc_info=True)
         os._exit(1)
