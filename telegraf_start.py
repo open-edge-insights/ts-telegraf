@@ -28,6 +28,7 @@ import subprocess
 from DataAgent.da_grpc.client.py.client_internal.client \
     import GrpcInternalClient
 from Util.log import configure_logging, LOG_LEVELS
+from distutils.util import strtobool
 from Util.util import create_decrypted_pem_files
 
 GRPC_CERTS_PATH = "/etc/ssl/grpc_int_ssl_secrets"
@@ -44,6 +45,8 @@ def parse_args():
                         help='Logging level (df: INFO)')
     parser.add_argument('--log-dir', dest='log_dir', default='logs',
                         help='Directory to for log files')
+    # parser.add_argument('--dev-mode', dest='dev_mode', default='False',
+    #                     help='developement mode True/False')
 
     return parser.parse_args()
 
@@ -52,6 +55,7 @@ if __name__ == '__main__':
 
     # Parse command line arguments
     args = parse_args()
+    devMode = bool(strtobool(os.environ['DEV_MODE']))
 
     currentDateTime = str(datetime.datetime.now())
     listDateTime = currentDateTime.split(" ")
@@ -63,17 +67,25 @@ if __name__ == '__main__':
 
     log.info("=============== STARTING telegraf ===============")
     try:
-        client = GrpcInternalClient(CLIENT_CERT, CLIENT_KEY, CA_CERT)
+        if not devMode:
+            client = GrpcInternalClient(CLIENT_CERT, CLIENT_KEY, CA_CERT)
+            srcFiles = [CA_CERT]
+            filesToDecrypt = ["/etc/ssl/ca/ca_certificate.pem"]
+            create_decrypted_pem_files(srcFiles, filesToDecrypt)
+        else:
+            client = GrpcInternalClient()
+
         config = client.GetConfigInt("InfluxDBCfg")
         os.environ["INFLUXDB_USERNAME"] = config["UserName"]
         os.environ["INFLUXDB_PASSWORD"] = config["Password"]
         os.environ["INFLUXDB_DBNAME"] = config["DBName"]
 
-        srcFiles = [CA_CERT]
-        filesToDecrypt = ["/etc/ssl/ca/ca_certificate.pem"]
-        create_decrypted_pem_files(srcFiles, filesToDecrypt)
+        if devMode:
+            Telegraf_conf = "/etc/Telegraf/telegraf_devmode.conf"
+        else:
+            Telegraf_conf = "/etc/Telegraf/telegraf.conf"
 
-        subprocess.call(["telegraf", "-config=Telegraf/Telegraf.conf"])
+        subprocess.call(["telegraf", "-config=" + Telegraf_conf])
     except Exception as e:
         log.error(e, exc_info=True)
         os._exit(1)
