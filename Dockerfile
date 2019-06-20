@@ -20,6 +20,7 @@ RUN pip3.6 install -r telegraf_requirements.txt && \
     rm -rf telegraf_requirements.txt
 
 # Add custom python entrypoint script to get cofig and set envirnoment variable
+COPY Util/ ./Util/
 COPY Telegraf ./Telegraf
 COPY DataAgent/da_grpc/ ./DataAgent/da_grpc
 
