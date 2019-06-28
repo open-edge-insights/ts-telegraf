@@ -8,7 +8,7 @@ FactoryControlApp/
 ImageStore
 kapacitor/
 licenses/
-StreamManager/
+InfluxDBConnector/
 StreamSubLib/
 test_videos/
 VideoIngestion/
@@ -19,7 +19,6 @@ basler-source-plugin/
 **/*.md
 **/*.mp4
 **/*.avi
-**/*.json
 **/*.pyc
 **/*.tar
 **/*.log

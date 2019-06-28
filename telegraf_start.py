@@ -25,8 +25,8 @@ import time
 import argparse
 import logging
 import subprocess
-from DataAgent.da_grpc.client.py.client_internal.client \
-    import GrpcInternalClient
+import json
+from libs.ConfigManager import ConfigManager
 from Util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
 from Util.util import create_decrypted_pem_files
@@ -67,18 +67,21 @@ if __name__ == '__main__':
 
     log.info("=============== STARTING telegraf ===============")
     try:
-        if not devMode:
-            client = GrpcInternalClient(CLIENT_CERT, CLIENT_KEY, CA_CERT)
-            srcFiles = [CA_CERT]
-            filesToDecrypt = ["/etc/ssl/ca/ca_certificate.pem"]
-            create_decrypted_pem_files(srcFiles, filesToDecrypt)
-        else:
-            client = GrpcInternalClient()
-
-        config = client.GetConfigInt("InfluxDBCfg")
-        os.environ["INFLUXDB_USERNAME"] = config["UserName"]
-        os.environ["INFLUXDB_PASSWORD"] = config["Password"]
-        os.environ["INFLUXDB_DBNAME"] = config["DBName"]
+        app_name = os.environ["AppName"]
+        config_key_path = "/config"
+        conf = {
+            "certFile": "",
+            "keyFile": "",
+            "trustFile": ""
+        }
+        cfg_mgr = ConfigManager()
+        etcd_cli = cfg_mgr.get_config_client("etcd", conf)
+        configfile = etcd_cli.GetConfig("/{0}{1}".format(
+                      app_name, config_key_path))
+        config = json.loads(configfile)
+        os.environ["INFLUXDB_USERNAME"] = config["influxdb"]["username"]
+        os.environ["INFLUXDB_PASSWORD"] = config["influxdb"]["password"]                 
+        os.environ["INFLUXDB_DBNAME"] = config["influxdb"]["dbname"]
 
         if devMode:
             Telegraf_conf = "/etc/Telegraf/telegraf_devmode.conf"
