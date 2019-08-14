@@ -41,49 +41,53 @@ def parse_args():
     """Parse command line arguments
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--log', choices=LOG_LEVELS.keys(), default='INFO',
-                        help='Logging level (df: INFO)')
     parser.add_argument('--log-dir', dest='log_dir', default='logs',
                         help='Directory to for log files')
-    # parser.add_argument('--dev-mode', dest='dev_mode', default='False',
-    #                     help='developement mode True/False')
 
     return parser.parse_args()
 
 
 if __name__ == '__main__':
+    dev_mode = bool(strtobool(os.environ["DEV_MODE"]))
+    # Initializing Etcd to set env variables
+    conf = {
+            "certFile": "",
+            "keyFile": "",
+            "trustFile": ""
+        }
+    if not dev_mode:
+        conf = {
+            "certFile": "/run/secrets/etcd_FactoryControlApp_cert",
+            "keyFile": "/run/secrets/etcd_FactoryControlApp_key",
+            "trustFile": "/run/secrets/ca_etcd"
+        }
+    cfg_mgr = ConfigManager()
+    etcd_cli = cfg_mgr.get_config_client("etcd", conf)
 
     # Parse command line arguments
     args = parse_args()
-    devMode = bool(strtobool(os.environ['DEV_MODE']))
 
     currentDateTime = str(datetime.datetime.now())
     listDateTime = currentDateTime.split(" ")
     currentDateTime = "_".join(listDateTime)
     logFileName = 'telegraf' + currentDateTime + '.log'
 
-    log = configure_logging(args.log.upper(), logFileName, args.log_dir,
+    log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(), logFileName,
+                            args.log_dir,
                             __name__)
 
     log.info("=============== STARTING telegraf ===============")
     try:
         app_name = os.environ["AppName"]
         config_key_path = "/config"
-        conf = {
-            "certFile": "",
-            "keyFile": "",
-            "trustFile": ""
-        }
-        cfg_mgr = ConfigManager()
-        etcd_cli = cfg_mgr.get_config_client("etcd", conf)
         configfile = etcd_cli.GetConfig("/{0}{1}".format(
                       app_name, config_key_path))
         config = json.loads(configfile)
         os.environ["INFLUXDB_USERNAME"] = config["influxdb"]["username"]
-        os.environ["INFLUXDB_PASSWORD"] = config["influxdb"]["password"]                 
+        os.environ["INFLUXDB_PASSWORD"] = config["influxdb"]["password"]
         os.environ["INFLUXDB_DBNAME"] = config["influxdb"]["dbname"]
 
-        if devMode:
+        if dev_mode:
             Telegraf_conf = "/etc/Telegraf/telegraf_devmode.conf"
         else:
             Telegraf_conf = "/etc/Telegraf/telegraf.conf"
