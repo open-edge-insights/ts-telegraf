@@ -27,7 +27,7 @@ RUN pip3.6 install -r telegraf_requirements.txt && \
 ADD telegraf_start.py ./Telegraf/telegraf_start.py
 
 ENV INFLUX_SERVER localhost
-ENV INFLUX_PORT 8086
+ENV INFLUXDB_PORT 8086
 ENV HOST_IP localhost
 ENTRYPOINT ["python3.6","Telegraf/telegraf_start.py", "--log-dir", "/EIS/telegraf_logs"]
 

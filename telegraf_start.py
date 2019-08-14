@@ -29,12 +29,12 @@ import json
 from libs.ConfigManager import ConfigManager
 from Util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
-from Util.util import create_decrypted_pem_files
 
-GRPC_CERTS_PATH = "/etc/ssl/grpc_int_ssl_secrets"
-CLIENT_CERT = GRPC_CERTS_PATH + "/grpc_internal_client_certificate.pem"
-CLIENT_KEY = GRPC_CERTS_PATH + "/grpc_internal_client_key.pem"
-CA_CERT = GRPC_CERTS_PATH + "/ca_certificate.pem"
+ETCD_CERT = "/run/secrets/etcd_root_cert"
+ETCD_KEY = "/run/secrets/etcd_root_key"
+CA_CERT = "/run/secrets/ca_etcd"
+INFLUX_CA_KEY = "/InfluxDBConnector/ca_cert"
+INFLUX_CA_PATH = "/etc/ssl/ca/ca_certificate.pem"
 
 
 def parse_args():
@@ -46,23 +46,43 @@ def parse_args():
 
     return parser.parse_args()
 
+def read_config(client, dev_mode):
+    """Read the configuration from etcd
+    """
+    app_name = os.environ["AppName"]
+    config_key_path = "/config"
+    configfile = client.GetConfig("/{0}{1}".format(
+                 app_name, config_key_path))
+    config = json.loads(configfile)
+    os.environ["INFLUXDB_USERNAME"] = config["influxdb"]["username"]
+    os.environ["INFLUXDB_PASSWORD"] = config["influxdb"]["password"]
+    os.environ["INFLUXDB_DBNAME"] = config["influxdb"]["dbname"]
+
+    if not dev_mode:
+        cert = client.GetConfig(INFLUX_CA_KEY)
+        try:
+            with open(INFLUX_CA_PATH, 'wb+') as fd:
+                fd.write(cert.encode())
+        except Exception as e:
+            log.debug("Failed creating file: {}, Error: {} ".format(INFLUX_CA_PATH,
+                                                                    e))
 
 if __name__ == '__main__':
     dev_mode = bool(strtobool(os.environ["DEV_MODE"]))
     # Initializing Etcd to set env variables
     conf = {
-            "certFile": "",
-            "keyFile": "",
-            "trustFile": ""
-        }
+        "certFile": "",
+        "keyFile": "",
+        "trustFile": ""
+    }
     if not dev_mode:
         conf = {
-            "certFile": "/run/secrets/etcd_FactoryControlApp_cert",
-            "keyFile": "/run/secrets/etcd_FactoryControlApp_key",
-            "trustFile": "/run/secrets/ca_etcd"
+            "certFile": ETCD_CERT,
+            "keyFile": ETCD_KEY,
+            "trustFile": CA_CERT
         }
     cfg_mgr = ConfigManager()
-    etcd_cli = cfg_mgr.get_config_client("etcd", conf)
+    config_client = cfg_mgr.get_config_client("etcd", conf)
 
     # Parse command line arguments
     args = parse_args()
@@ -78,20 +98,12 @@ if __name__ == '__main__':
 
     log.info("=============== STARTING telegraf ===============")
     try:
-        app_name = os.environ["AppName"]
-        config_key_path = "/config"
-        configfile = etcd_cli.GetConfig("/{0}{1}".format(
-                      app_name, config_key_path))
-        config = json.loads(configfile)
-        os.environ["INFLUXDB_USERNAME"] = config["influxdb"]["username"]
-        os.environ["INFLUXDB_PASSWORD"] = config["influxdb"]["password"]
-        os.environ["INFLUXDB_DBNAME"] = config["influxdb"]["dbname"]
-
         if dev_mode:
             Telegraf_conf = "/etc/Telegraf/telegraf_devmode.conf"
         else:
             Telegraf_conf = "/etc/Telegraf/telegraf.conf"
 
+        read_config(config_client, dev_mode)
         subprocess.call(["telegraf", "-config=" + Telegraf_conf])
     except Exception as e:
         log.error(e, exc_info=True)
