@@ -1,9 +1,9 @@
 # Dockerfile for Telegraf
 
 ARG EIS_VERSION
-FROM ia_pybase:$EIS_VERSION
+FROM ia_pybase:$EIS_VERSION as pybase
 LABEL description="Telegraf image"
-RUN mkdir -p /EIS/telegraf_logs
+RUN mkdir -p ${PY_WORK_DIR}/telegraf_logs
 
 # Getting Telegraf binary
 RUN wget https://dl.influxdata.com/telegraf/releases/telegraf_1.9.0-1_amd64.deb && \
@@ -15,12 +15,18 @@ ENV PYTHONPATH ${PYTHONPATH}:.
 ARG EIS_UID
 RUN mkdir -p /etc/ssl/ca && \
     chown -R ${EIS_UID} /etc/ssl/ && \
-    chown -R ${EIS_UID} /EIS/telegraf_logs 
-    
+    chown -R ${EIS_UID} ${PY_WORK_DIR}/telegraf_logs 
 
 ADD telegraf_requirements.txt . 
 RUN pip3.6 install -r telegraf_requirements.txt && \
     rm -rf telegraf_requirements.txt
+
+FROM ia_common:$EIS_VERSION as common
+
+FROM pybase
+
+COPY --from=common /libs ${PY_WORK_DIR}/libs
+COPY --from=common /Util ${PY_WORK_DIR}/Util
 
 # Add custom python entrypoint script to get cofig and set envirnoment variable
 
