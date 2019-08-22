@@ -30,8 +30,8 @@ from libs.ConfigManager import ConfigManager
 from Util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
 
-ETCD_CERT = "/run/secrets/etcd_root_cert"
-ETCD_KEY = "/run/secrets/etcd_root_key"
+ETCD_CERT = "/run/secrets/etcd_InfluxDBConnector_cert"
+ETCD_KEY = "/run/secrets/etcd_InfluxDBConnector_key"
 CA_CERT = "/run/secrets/ca_etcd"
 INFLUX_CA_KEY = "/InfluxDBConnector/ca_cert"
 INFLUX_CA_PATH = "/etc/ssl/ca/ca_certificate.pem"
@@ -49,10 +49,11 @@ def parse_args():
 def read_config(client, dev_mode):
     """Read the configuration from etcd
     """
-    app_name = os.environ["AppName"]
-    config_key_path = "/config"
-    configfile = client.GetConfig("/{0}{1}".format(
-                 app_name, config_key_path))
+    key = ETCD_CERT.split('/')
+    app_name = key[3].split('_')
+    config_key_path = "config"
+    configfile = client.GetConfig("/{0}/{1}".format(
+                 app_name[1], config_key_path))
     config = json.loads(configfile)
     os.environ["INFLUXDB_USERNAME"] = config["influxdb"]["username"]
     os.environ["INFLUXDB_PASSWORD"] = config["influxdb"]["password"]
