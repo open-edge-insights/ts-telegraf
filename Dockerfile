@@ -17,7 +17,7 @@ RUN mkdir -p /etc/ssl/ca && \
     chown -R ${EIS_UID} /etc/ssl/ && \
     chown -R ${EIS_UID} ${PY_WORK_DIR}/telegraf_logs 
 
-ADD telegraf_requirements.txt . 
+COPY telegraf_requirements.txt . 
 RUN pip3.6 install -r telegraf_requirements.txt && \
     rm -rf telegraf_requirements.txt
 
@@ -30,7 +30,7 @@ COPY --from=common /Util ${PY_WORK_DIR}/Util
 
 # Add custom python entrypoint script to get cofig and set envirnoment variable
 
-ADD telegraf_start.py ./Telegraf/telegraf_start.py
+COPY telegraf_start.py ./Telegraf/telegraf_start.py
 
 ENV INFLUX_SERVER localhost
 ENV INFLUXDB_PORT 8086
