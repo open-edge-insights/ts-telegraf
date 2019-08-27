@@ -37,15 +37,6 @@ INFLUX_CA_KEY = "/InfluxDBConnector/ca_cert"
 INFLUX_CA_PATH = "/etc/ssl/ca/ca_certificate.pem"
 
 
-def parse_args():
-    """Parse command line arguments
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--log-dir', dest='log_dir', default='logs',
-                        help='Directory to for log files')
-
-    return parser.parse_args()
-
 def read_config(client, dev_mode):
     """Read the configuration from etcd
     """
@@ -85,17 +76,9 @@ if __name__ == '__main__':
     cfg_mgr = ConfigManager()
     config_client = cfg_mgr.get_config_client("etcd", conf)
 
-    # Parse command line arguments
-    args = parse_args()
-
-    currentDateTime = str(datetime.datetime.now())
-    listDateTime = currentDateTime.split(" ")
-    currentDateTime = "_".join(listDateTime)
-    logFileName = 'telegraf' + currentDateTime + '.log'
-
-    log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(), logFileName,
-                            args.log_dir,
+    log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
                             __name__)
+
 
     log.info("=============== STARTING telegraf ===============")
     try:
