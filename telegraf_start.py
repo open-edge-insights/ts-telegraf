@@ -27,7 +27,7 @@ import logging
 import subprocess
 import json
 from libs.ConfigManager import ConfigManager
-from Util.log import configure_logging, LOG_LEVELS
+from util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
 
 ETCD_CERT = "/run/secrets/etcd_InfluxDBConnector_cert"
