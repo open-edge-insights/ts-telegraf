@@ -1,7 +1,7 @@
 # Dockerfile for Telegraf
 
 ARG EIS_VERSION
-FROM ia_pybase:$EIS_VERSION as pybase
+FROM ia_eisbase:$EIS_VERSION as eisbase
 LABEL description="Telegraf image"
 
 # Getting Telegraf binary
@@ -17,7 +17,7 @@ RUN mkdir -p /etc/ssl/ca && \
 
 FROM ia_common:$EIS_VERSION as common
 
-FROM pybase
+FROM eisbase
 
 COPY --from=common /libs ${PY_WORK_DIR}/libs
 COPY --from=common /util ${PY_WORK_DIR}/util
