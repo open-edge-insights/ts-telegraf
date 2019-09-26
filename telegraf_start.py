@@ -29,28 +29,24 @@ import json
 from libs.ConfigManager import ConfigManager
 from util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
+from util.util import Util
 
-ETCD_CERT = "/run/secrets/etcd_InfluxDBConnector_cert"
-ETCD_KEY = "/run/secrets/etcd_InfluxDBConnector_key"
-CA_CERT = "/run/secrets/ca_etcd"
-INFLUX_CA_KEY = "/InfluxDBConnector/ca_cert"
 INFLUX_CA_PATH = "/etc/ssl/ca/ca_certificate.pem"
-
 
 def read_config(client, dev_mode):
     """Read the configuration from etcd
     """
-    key = ETCD_CERT.split('/')
-    app_name = key[3].split('_')
+    influx_app_name = os.environ["InfluxDbAppName"]
     config_key_path = "config"
     configfile = client.GetConfig("/{0}/{1}".format(
-                 app_name[1], config_key_path))
+                 influx_app_name, config_key_path))
     config = json.loads(configfile)
     os.environ["INFLUXDB_USERNAME"] = config["influxdb"]["username"]
     os.environ["INFLUXDB_PASSWORD"] = config["influxdb"]["password"]
     os.environ["INFLUXDB_DBNAME"] = config["influxdb"]["dbname"]
 
     if not dev_mode:
+        INFLUX_CA_KEY = "/" + influx_app_name + "/ca_cert"
         cert = client.GetConfig(INFLUX_CA_KEY)
         try:
             with open(INFLUX_CA_PATH, 'wb+') as fd:
@@ -62,23 +58,13 @@ def read_config(client, dev_mode):
 if __name__ == '__main__':
     dev_mode = bool(strtobool(os.environ["DEV_MODE"]))
     # Initializing Etcd to set env variables
-    conf = {
-        "certFile": "",
-        "keyFile": "",
-        "trustFile": ""
-    }
-    if not dev_mode:
-        conf = {
-            "certFile": ETCD_CERT,
-            "keyFile": ETCD_KEY,
-            "trustFile": CA_CERT
-        }
+    influx_app_name = os.environ["InfluxDbAppName"]
+    conf = Util.get_crypto_dict(influx_app_name)
     cfg_mgr = ConfigManager()
     config_client = cfg_mgr.get_config_client("etcd", conf)
 
     log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
                             __name__,dev_mode)
-
 
     log.info("=============== STARTING telegraf ===============")
     try:
