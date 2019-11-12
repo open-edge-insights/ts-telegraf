@@ -29,6 +29,12 @@ COPY --from=common /usr/local/lib/python3.6/dist-packages/ /usr/local/lib/python
 
 COPY telegraf_start.py ./Telegraf/telegraf_start.py
 
+#Removing build dependencies
+RUN apt-get remove -y wget && \
+    apt-get remove -y git && \
+    apt-get remove curl && \
+    apt-get autoremove -y
+
 ENV INFLUX_SERVER localhost
 ENV INFLUXDB_PORT 8086
 ENV HOST_IP localhost
