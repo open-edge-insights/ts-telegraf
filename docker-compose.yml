@@ -1,0 +1,38 @@
+version: '3.6'
+
+services:
+  ## Define telegraf service
+  ia_telegraf:
+    depends_on:
+      - ia_common
+    build:
+      context: $PWD/../Telegraf
+      dockerfile: $PWD/../Telegraf/Dockerfile
+      args:
+        EIS_VERSION: ${EIS_VERSION}
+        EIS_UID: ${EIS_UID}
+    container_name: ia_telegraf
+    hostname: ia_telegraf
+    network_mode: host
+    image: ${DOCKER_REGISTRY}ia_telegraf:${EIS_VERSION}
+    restart: unless-stopped
+    environment:
+      AppName: "Telegraf"
+      InfluxDbAppName: "InfluxDBConnector"
+      CertType: ""
+      DEV_MODE: ${DEV_MODE}
+      no_proxy: ${no_proxy}
+    volumes:
+      - "./config/telegraf.conf:/etc/Telegraf/telegraf.conf"
+      - "./config/telegraf_devmode.conf:/etc/Telegraf/telegraf_devmode.conf"
+    user: ${EIS_UID}
+    secrets:
+      - ca_etcd
+      - etcd_InfluxDBConnector_cert
+      - etcd_InfluxDBConnector_key
+
+secrets:
+  etcd_InfluxDBConnector_cert:
+    file: provision/Certificates/InfluxDBConnector/InfluxDBConnector_client_certificate.pem
+  etcd_InfluxDBConnector_key:
+    file: provision/Certificates/InfluxDBConnector/InfluxDBConnector_client_key.pem
