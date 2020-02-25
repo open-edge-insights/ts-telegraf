@@ -27,7 +27,11 @@ COPY --from=common /usr/local/lib/python3.6/dist-packages/ /usr/local/lib/python
 
 # Add custom python entrypoint script to get cofig and set envirnoment variable
 
-COPY telegraf_start.py ./Telegraf/telegraf_start.py
+COPY . ./Telegraf/
+RUN mkdir /etc/Telegraf && \
+    cp ./Telegraf/config/telegraf.conf /etc/Telegraf/ && \
+    cp ./Telegraf/config/telegraf_devmode.conf /etc/Telegraf/ && \
+    rm -rf ./Telegraf/config
 
 #Removing build dependencies
 RUN apt-get remove -y wget && \
