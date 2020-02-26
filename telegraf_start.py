@@ -26,7 +26,7 @@ import argparse
 import logging
 import subprocess
 import json
-from libs.ConfigManager import ConfigManager
+from eis.config_manager import ConfigManager
 from util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
 from util.util import Util
