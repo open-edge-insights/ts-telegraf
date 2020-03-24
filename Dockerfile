@@ -40,7 +40,4 @@ RUN apt-get remove -y wget && \
     apt-get remove curl && \
     apt-get autoremove -y
 
-ENV INFLUX_SERVER localhost
-ENV INFLUXDB_PORT 8086
-ENV HOST_IP localhost
 ENTRYPOINT ["python3.6","Telegraf/telegraf_start.py"]
