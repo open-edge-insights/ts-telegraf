@@ -11,6 +11,7 @@ services:
       args:
         EIS_VERSION: ${EIS_VERSION}
         EIS_UID: ${EIS_UID}
+        TELEGRAF_VERSION: ${TELEGRAF_VERSION}
     container_name: ia_telegraf
     hostname: ia_telegraf
     network_mode: host
@@ -21,10 +22,13 @@ services:
       InfluxDbAppName: "InfluxDBConnector"
       CertType: ""
       DEV_MODE: ${DEV_MODE}
-      no_proxy: ${no_proxy}
-    volumes:
-      - "./config/telegraf.conf:/etc/Telegraf/telegraf.conf"
-      - "./config/telegraf_devmode.conf:/etc/Telegraf/telegraf_devmode.conf"
+      no_proxy: ${eis_no_proxy},${ETCD_HOST}
+      NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
+      ETCD_HOST: ${ETCD_HOST}
+      HOST_IP: '127.0.0.1'
+      INFLUX_SERVER: '127.0.0.1'
+      INFLUXDB_PORT: $INFLUXDB_PORT
+      ETCD_PREFIX: ${ETCD_PREFIX}
     user: ${EIS_UID}
     secrets:
       - ca_etcd
