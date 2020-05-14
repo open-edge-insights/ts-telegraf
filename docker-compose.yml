@@ -12,6 +12,7 @@ services:
         EIS_VERSION: ${EIS_VERSION}
         EIS_UID: ${EIS_UID}
         TELEGRAF_VERSION: ${TELEGRAF_VERSION}
+        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
     container_name: ia_telegraf
     hostname: ia_telegraf
     network_mode: host
