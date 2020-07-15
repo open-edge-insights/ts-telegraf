@@ -38,6 +38,7 @@ services:
     network_mode: host
     image: ${DOCKER_REGISTRY}ia_telegraf:${EIS_VERSION}
     restart: unless-stopped
+    read_only: true
     environment:
       AppName: "Telegraf"
       InfluxDbAppName: "InfluxDBConnector"
@@ -51,10 +52,20 @@ services:
       INFLUXDB_PORT: $INFLUXDB_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
     user: ${EIS_UID}
+    volumes:
+      - "vol_temp_telegraf:/tmp/ca/"
     secrets:
       - ca_etcd
       - etcd_InfluxDBConnector_cert
       - etcd_InfluxDBConnector_key
+
+volumes:
+  vol_temp_telegraf:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      o: "size=5K"
+      device: tmpfs
 
 secrets:
   etcd_InfluxDBConnector_cert:

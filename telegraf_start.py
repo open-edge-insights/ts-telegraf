@@ -20,42 +20,43 @@ SOFTWARE.
 """
 
 import os
-import datetime
-import time
-import argparse
-import logging
+import sys
 import subprocess
 import json
-from eis.config_manager import ConfigManager
-from util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
+from eis.config_manager import ConfigManager
+from util.log import configure_logging
 from util.util import Util
 
-INFLUX_CA_PATH = "/etc/ssl/ca/ca_certificate.pem"
+INFLUX_CA_PATH = "/tmp/ca/ca_certificate.pem"
 
-def read_config(client, dev_mode):
+
+def read_config(client, dev_mode, log):
     """Read the configuration from etcd
     """
     influx_app_name = os.environ["InfluxDbAppName"]
     config_key_path = "config"
-    configfile = client.GetConfig("/{0}/{1}".format(
-                 influx_app_name, config_key_path))
+    configfile = client.GetConfig("/{0}/{1}".format(influx_app_name,
+                                                    config_key_path))
     config = json.loads(configfile)
     os.environ["INFLUXDB_USERNAME"] = config["influxdb"]["username"]
     os.environ["INFLUXDB_PASSWORD"] = config["influxdb"]["password"]
     os.environ["INFLUXDB_DBNAME"] = config["influxdb"]["dbname"]
 
     if not dev_mode:
-        INFLUX_CA_KEY = "/" + influx_app_name + "/ca_cert"
-        cert = client.GetConfig(INFLUX_CA_KEY)
+        influx_ca_key = "/" + influx_app_name + "/ca_cert"
+        cert = client.GetConfig(influx_ca_key)
         try:
-            with open(INFLUX_CA_PATH, 'wb+') as fd:
-                fd.write(cert.encode())
-        except Exception as e:
-            log.debug("Failed creating file: {}, Error: {} ".format(INFLUX_CA_PATH,
-                                                                    e))
+            with open(INFLUX_CA_PATH, 'wb+') as fpd:
+                fpd.write(cert.encode())
+        except (OSError, IOError) as err:
+            log.debug("Failed creating file: {}, Error: {} ".format(
+                INFLUX_CA_PATH, err))
 
-if __name__ == '__main__':
+
+def main():
+    """Main to start the telegraf service
+    """
     dev_mode = bool(strtobool(os.environ["DEV_MODE"]))
     # Initializing Etcd to set env variables
     influx_app_name = os.environ["InfluxDbAppName"]
@@ -64,17 +65,21 @@ if __name__ == '__main__':
     config_client = cfg_mgr.get_config_client("etcd", conf)
 
     log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
-                            __name__,dev_mode)
+                            __name__, dev_mode)
 
     log.info("=============== STARTING telegraf ===============")
     try:
         if dev_mode:
-            Telegraf_conf = "/etc/Telegraf/telegraf_devmode.conf"
+            telegraf_conf = "/etc/Telegraf/telegraf_devmode.conf"
         else:
-            Telegraf_conf = "/etc/Telegraf/telegraf.conf"
+            telegraf_conf = "/etc/Telegraf/telegraf.conf"
 
-        read_config(config_client, dev_mode)
-        subprocess.call(["telegraf", "-config=" + Telegraf_conf])
-    except Exception as e:
-        log.error(e, exc_info=True)
-        os._exit(1)
+        read_config(config_client, dev_mode, log)
+        subprocess.call(["telegraf", "-config=" + telegraf_conf])
+    except subprocess.CalledProcessError as err:
+        log.error(err, exc_info=True)
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
