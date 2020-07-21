@@ -51,8 +51,7 @@ COPY --from=common /usr/local/lib/python3.6/dist-packages/ /usr/local/lib/python
 
 COPY . ./Telegraf/
 RUN mkdir /etc/Telegraf && \
-    cp ./Telegraf/config/telegraf.conf /etc/Telegraf/ && \
-    cp ./Telegraf/config/telegraf_devmode.conf /etc/Telegraf/ && \
+    cp -r ./Telegraf/config/* /etc/Telegraf/ && \
     rm -rf ./Telegraf/config
 
 #Removing build dependencies

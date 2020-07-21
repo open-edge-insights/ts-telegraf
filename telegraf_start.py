@@ -58,6 +58,7 @@ def main():
     """Main to start the telegraf service
     """
     dev_mode = bool(strtobool(os.environ["DEV_MODE"]))
+    app_name = str(os.environ["AppName"])
     # Initializing Etcd to set env variables
     influx_app_name = os.environ["InfluxDbAppName"]
     conf = Util.get_crypto_dict(influx_app_name)
@@ -69,13 +70,23 @@ def main():
 
     log.info("=============== STARTING telegraf ===============")
     try:
-        if dev_mode:
-            telegraf_conf = "/etc/Telegraf/telegraf_devmode.conf"
-        else:
-            telegraf_conf = "/etc/Telegraf/telegraf.conf"
-
+        command = None
+        if len(sys.argv) > 1:
+            command = str(sys.argv[1])
         read_config(config_client, dev_mode, log)
-        subprocess.call(["telegraf", "-config=" + telegraf_conf])
+        if command is None:
+            if dev_mode:
+                telegraf_conf = "/etc/Telegraf/" \
+                                + app_name \
+                                + "/" \
+                                + app_name \
+                                + "_devmode.conf"
+            else:
+                telegraf_conf = "/etc/Telegraf/"+app_name+"/"+app_name+".conf"
+            subprocess.call(["telegraf", "-config=" + telegraf_conf])
+        else:
+            subprocess.call(command.split())
+
     except subprocess.CalledProcessError as err:
         log.error(err, exc_info=True)
         sys.exit(1)
