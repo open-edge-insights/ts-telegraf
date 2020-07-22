@@ -28,7 +28,7 @@ from eis.config_manager import ConfigManager
 from util.log import configure_logging
 from util.util import Util
 
-INFLUX_CA_PATH = "/tmp/ca/ca_certificate.pem"
+INFLUX_CA_PATH = "/tmp/ca_certificate.pem"
 
 
 def read_config(client, dev_mode, log):

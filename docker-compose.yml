@@ -53,7 +53,7 @@ services:
       ETCD_PREFIX: ${ETCD_PREFIX}
     user: ${EIS_UID}
     volumes:
-      - "vol_temp_telegraf:/tmp/ca/"
+      - "vol_temp_telegraf:/tmp/"
     secrets:
       - ca_etcd
       - etcd_InfluxDBConnector_cert
