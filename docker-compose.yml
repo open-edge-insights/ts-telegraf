@@ -38,6 +38,7 @@ services:
     network_mode: host
     image: ${DOCKER_REGISTRY}ia_telegraf:${EIS_VERSION}
     restart: unless-stopped
+    ipc: "none"
     read_only: true
     environment:
       AppName: "Telegraf"
