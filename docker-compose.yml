@@ -31,8 +31,9 @@ services:
       args:
         EIS_VERSION: ${EIS_VERSION}
         EIS_UID: ${EIS_UID}
-        TELEGRAF_VERSION: ${TELEGRAF_VERSION}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
+        TELEGRAF_SOURCE_TAG: ${TELEGRAF_SOURCE_TAG}
+        TELEGRAF_GO_VERSION: ${TELEGRAF_GO_VERSION}
     container_name: ia_telegraf
     hostname: ia_telegraf
     network_mode: host
@@ -42,7 +43,7 @@ services:
     read_only: true
     environment:
       AppName: "Telegraf"
-      CertType: "pem"
+      CertType: "pem,zmq"
       DEV_MODE: ${DEV_MODE}
       no_proxy: ${eis_no_proxy},${ETCD_HOST}
       NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
@@ -54,6 +55,7 @@ services:
     user: ${EIS_UID}
     volumes:
       - "vol_temp_telegraf:/tmp/"
+      - "vol_eis_socket:${SOCKET_DIR}"
     secrets:
       - ca_etcd
       - etcd_Telegraf_cert
