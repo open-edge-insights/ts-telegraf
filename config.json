@@ -20,6 +20,7 @@
         "Subscribers": [
             {
                 "Name": "publisher1",
+		"PublisherAppName": "Telegraf",
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:5569",
                 "Topics": [
@@ -29,4 +30,3 @@
         ]
     }
 }
-

@@ -25,18 +25,13 @@ ARG DOCKER_REGISTRY
 FROM ${DOCKER_REGISTRY}ia_eisbase:$EIS_VERSION as eisbase
 LABEL description="Telegraf image"
 
-# Getting Telegraf binary
-ARG TELEGRAF_VERSION
-RUN wget https://dl.influxdata.com/telegraf/releases/telegraf_${TELEGRAF_VERSION}_amd64.deb && \
-    dpkg -i telegraf_${TELEGRAF_VERSION}_amd64.deb && \
-    rm telegraf_${TELEGRAF_VERSION}_amd64.deb
-
 ENV PYTHONPATH ${PYTHONPATH}:.
 
 ARG EIS_UID
 RUN mkdir -p /etc/ssl/ca && \
     chown -R ${EIS_UID} /etc/ssl/
 
+ARG DOCKER_REGISTRY
 FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
 
 FROM eisbase
@@ -45,10 +40,43 @@ COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
 COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
 COPY --from=common ${GO_WORK_DIR}/common/cmake ${PY_WORK_DIR}/common/cmake
 COPY --from=common /usr/local/lib /usr/local/lib
+COPY --from=common /usr/local/include /usr/local/include
 COPY --from=common /usr/local/lib/python3.6/dist-packages/ /usr/local/lib/python3.6/dist-packages/
+COPY --from=common ${GO_WORK_DIR}/common/cmake ${GO_WORK_DIR}/common/cmake
 
-# Add custom python entrypoint script to get cofig and set envirnoment variable
+ARG TELEGRAF_GO_VERSION
+RUN wget https://golang.org/dl/go${TELEGRAF_GO_VERSION}.linux-amd64.tar.gz && \
+    rm -rf /usr/local/go && tar -C /usr/local -xzf go${TELEGRAF_GO_VERSION}.linux-amd64.tar.gz
 
+COPY --from=common ${GO_WORK_DIR}/../EISMessageBus /usr/local/go/src/EISMessageBus
+COPY --from=common ${GO_WORK_DIR}/../ConfigMgr /usr/local/go/src/ConfigMgr
+
+ARG TELEGRAF_SOURCE_TAG
+RUN mkdir /src/ && \
+    cd /src/ && \
+    git clone https://github.com/influxdata/telegraf.git && \
+    cd telegraf && \
+    git fetch --tags && \
+    git checkout tags/${TELEGRAF_SOURCE_TAG} -b ${TELEGRAF_SOURCE_TAG}-branch
+
+ENV TELEGRAF_SRC_DIR /src/telegraf
+
+WORKDIR ${TELEGRAF_SRC_DIR}
+RUN go get google.golang.org/grpc@v1.26.0
+COPY ./plugins/inputs/all/all.patch /tmp/all.patch
+COPY ./plugins/inputs/eis_msgbus /src/telegraf/plugins/inputs/eis_msgbus
+
+# Applying the patch to only single file.
+RUN patch -p0 ./plugins/inputs/all/all.go -i /tmp/all.patch && rm -f /tmp/all.patch
+
+RUN make
+RUN mv /src/telegraf/telegraf /usr/local/go/bin/telegraf
+RUN rm -rf /src/telegraf
+
+COPY ./TestPublisherApp /src/TestPublisherApp
+RUN go build -o /src/TestPublisherApp/publisher /src/TestPublisherApp/*.go
+
+WORKDIR /EIS
 COPY . ./Telegraf/
 RUN mkdir /etc/Telegraf && \
     cp -r ./Telegraf/config/* /etc/Telegraf/ && \
