@@ -23,12 +23,15 @@ import os
 import sys
 import subprocess
 import json
+import tempfile
 from distutils.util import strtobool
 from eis.config_manager import ConfigManager
 from util.log import configure_logging
 from util.util import Util
 
-INFLUX_CA_PATH = "/tmp/ca_certificate.pem"
+
+TMP_DIR = tempfile.gettempdir()
+INFLUX_CA_PATH = os.path.join(TMP_DIR, "ca_certificate.pem")
 
 
 def read_config(client, dev_mode, log):
