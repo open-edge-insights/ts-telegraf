@@ -1,1 +1,32 @@
-{}
+{
+    "config": {
+        "influxdb": {
+            "username": "admin",
+            "password": "admin123",
+            "dbname": "datain"
+        },
+        "publisher1": {
+            "topics_info": [
+                "topic-pfx1:temperature:10:2",
+                "topic-pfx2:pressure::",
+                "topic-pfx3:humidity"
+            ],
+            "queue_len": 10,
+            "num_worker": 2,
+            "profiling": "false"
+        }
+    },
+    "interfaces": {
+        "Subscribers": [
+            {
+                "Name": "publisher1",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:5569",
+                "Topics": [
+                    "*"
+                ]
+            }
+        ]
+    }
+}
+

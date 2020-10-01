@@ -42,8 +42,7 @@ services:
     read_only: true
     environment:
       AppName: "Telegraf"
-      InfluxDbAppName: "InfluxDBConnector"
-      CertType: ""
+      CertType: "pem"
       DEV_MODE: ${DEV_MODE}
       no_proxy: ${eis_no_proxy},${ETCD_HOST}
       NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
@@ -57,8 +56,8 @@ services:
       - "vol_temp_telegraf:/tmp/"
     secrets:
       - ca_etcd
-      - etcd_InfluxDBConnector_cert
-      - etcd_InfluxDBConnector_key
+      - etcd_Telegraf_cert
+      - etcd_Telegraf_key
 
 volumes:
   vol_temp_telegraf:
@@ -69,7 +68,7 @@ volumes:
       device: tmpfs
 
 secrets:
-  etcd_InfluxDBConnector_cert:
-    file: provision/Certificates/InfluxDBConnector/InfluxDBConnector_client_certificate.pem
-  etcd_InfluxDBConnector_key:
-    file: provision/Certificates/InfluxDBConnector/InfluxDBConnector_client_key.pem
+  etcd_Telegraf_cert:
+    file: provision/Certificates/Telegraf/Telegraf_client_certificate.pem
+  etcd_Telegraf_key:
+    file: provision/Certificates/Telegraf/Telegraf_client_key.pem
