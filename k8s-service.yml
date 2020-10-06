@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
       - name: ia-telegraf
-        image: ia_telegraf:${EIS_VERSION}
+        image: ${DOCKER_REGISTRY}ia_telegraf:${EIS_VERSION}
         securityContext:
           privileged: true
         volumeMounts:
