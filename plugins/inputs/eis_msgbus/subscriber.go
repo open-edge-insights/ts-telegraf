@@ -51,7 +51,7 @@ func (pluginSubObj *pluginSubscriber) initEisMsgBusConfigMap() error {
 		return fmt.Errorf("Error while getting eis message bus config: %v\n", err)
 	}
 
-	pluginSubObj.Log.Infof("Plugin config is %v", pluginSubObj.eisMsgBusConfigMap)
+	pluginSubObj.Log.Debugf("Plugin config is %v", pluginSubObj.eisMsgBusConfigMap)
 
 	return nil
 }
