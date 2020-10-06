@@ -77,9 +77,50 @@ create a directory ‘telegraf.d’ inside [config](./config)/\<AppName> :
 	      - "vol_temp_telegraf:/tmp/"
 	    secrets:
 	      - ca_etcd
-	      - etcd_InfluxDBConnector_cert
-	      - etcd_InfluxDBConnector_key
+	      - etcd_Telegraf1_cert
+	      - etcd_Telegraf1_key
+    etcd_Telegraf1_cert:
+        file: provision/Certificates/Telegraf/Telegraf1_client_certificate.pem
+    etcd_Telegraf1_key:
+        file: provision/Certificates/Telegraf/Telegraf1_client_key.pem
 	```
+* For adding a new instance user needs to add telegraf config in ../build/provision/config/eis_config.json after runinng "python3.6 eis_builder.py"
+
+```
+    "/Telegraf1/config": {
+        "influxdb": {
+            "dbname": "datain",
+            "password": "admin123",
+            "username": "admin"
+        },
+        "publisher1": {
+            "num_worker": 2,
+            "profiling": "false",
+            "queue_len": 10,
+            "topics_info": [
+                "topic-pfx1:temperature:10:2",
+                "topic-pfx2:pressure::",
+                "topic-pfx3:humidity"
+            ]
+        }
+    },
+    "/Telegraf1/interfaces": {
+        "Subscribers": [
+            {
+                "EndPoint": "127.0.0.1:5569",
+                "Name": "publisher1",
+                "PublisherAppName": "Telegraf",
+                "Topics": [
+                    "*"
+                ],
+                "Type": "zmq_tcp"
+            }
+        ]
+    }
+
+```
+
+
 * Telegraf Instance can be configured with pressure point data ingestion. In the following example, the MQTT input plugin of Telegraf is configured to read pressure point data and stores into ‘point_pressure_data’ measurement.
 
 	```
