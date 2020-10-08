@@ -62,15 +62,19 @@ func testSubscriber(t *testing.T, eisMsgBus *EisMsgbus, jsonMsg map[string]inter
 	for key, _ := range eisMsgBus.pluginConfigObj.mapOfPrefixToConfig {
 		msg := eismsgbustype.NewMsgEnvelope(nil, buffer)
 		msg.Name = key
-		eisMsgBus.pluginSubObj.msgBusSubscriber.MessageChannel <- msg
+		for _, sub := range eisMsgBus.pluginSubObj.msgBusSubMap {
+			sub.MessageChannel <- msg
+		}
 	}
 
 	time.Sleep(10000 * time.Millisecond)
 
-	numElm := len(eisMsgBus.pluginSubObj.msgBusSubscriber.MessageChannel)
-	assert := assert.New(t)
-	message := testCaseName + " failed"
-	assert.Equal(numElm, 0, message)
+	for _, sub := range eisMsgBus.pluginSubObj.msgBusSubMap {
+		numElm := len(sub.MessageChannel)
+		assert := assert.New(t)
+		message := testCaseName + " failed"
+		assert.Equal(numElm, 0, message)
+	}
 
 	go eisMsgBus.Stop()
 }

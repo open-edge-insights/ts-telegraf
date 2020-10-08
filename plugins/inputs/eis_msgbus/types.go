@@ -75,17 +75,19 @@ type pluginRuntimeData struct {
 	subControlChannel    chan byte              // controlling subscriber loops
 	parser               parsers.Parser         // json parser to be used
 	ac                   telegraf.Accumulator
+	mutex                *sync.Mutex // lock to gaurd pluginRuntimeData
 }
 
 type pluginSubscriber struct {
-	msgBusClient       *eismsgbus.MsgbusClient     // eis messsagebus client
-	msgBusSubscriber   *eismsgbus.Subscriber       // eis messagebus subscriber handle
-	pluginConfigObj    *eisMsgbusInputPluginConfig // ref to plugin config onject
-	pluginRtData       *pluginRuntimeData          // ref to plugin runtime data
-	eisMsgBusConfigMap map[string]interface{}      // eis messagbus config
-	Log                telegraf.Logger             // telegraf logger object
-	wg                 sync.WaitGroup              // to waid for all subscribers to gracefully exit
-	confMgr            *eiscfgmgr.ConfigMgr        // Config manager reference
+	msgBusClient       *eismsgbus.MsgbusClient          // eis messsagebus client
+	msgBusSubMap       map[string]*eismsgbus.Subscriber // eis messagebus subscriber handels for topic prefix
+	subTopics          []string                         // sub topics from etcd interface
+	pluginConfigObj    *eisMsgbusInputPluginConfig      // ref to plugin config onject
+	pluginRtData       *pluginRuntimeData               // ref to plugin runtime data
+	eisMsgBusConfigMap map[string]interface{}           // eis messagbus config
+	Log                telegraf.Logger                  // telegraf logger object
+	wg                 sync.WaitGroup                   // to waid for all subscribers to gracefully exit
+	confMgr            *eiscfgmgr.ConfigMgr             // Config manager reference
 }
 
 // The wraper for Telegraf engine components

@@ -49,6 +49,20 @@ func (pluginConfigObj *eisMsgbusInputPluginConfig) getPrefixConfigForTopic(tpNam
 	return config
 }
 
+func (pluginConfigObj *eisMsgbusInputPluginConfig) getDefaultPrefix(tpName string) (*topicPrefixConfig, error) {
+
+	tempArray := []string{"", ""}
+	tempArray[0] = tpName
+	tempArray[1] = tpName
+
+	tempObj := getTopicPrefixConfig(tempArray)
+	if tempObj == nil {
+		return nil, fmt.Errorf("wrong prefix configuration:%v", tempArray)
+	}
+
+	return tempObj, nil
+}
+
 // Converts the plugin configuration into plugin configuration object of type pluginConfigObj.
 func (pluginConfigObj *eisMsgbusInputPluginConfig) initConfig(emb *EisMsgbus) error {
 

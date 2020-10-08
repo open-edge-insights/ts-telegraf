@@ -27,6 +27,7 @@ import (
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/inputs"
 	"github.com/influxdata/telegraf/plugins/parsers"
+	"sync"
 )
 
 // EisMsgbus : plugin object
@@ -48,6 +49,7 @@ func (emb *EisMsgbus) initPluginRtData() {
 	emb.pluginRtData.subControlChannel = make(chan byte)
 	emb.pluginRtData.ac = emb.ac
 	emb.pluginRtData.parser = emb.parser
+	emb.pluginRtData.mutex = &sync.Mutex{}
 }
 
 // Description : A short description for a plugin
