@@ -13,29 +13,32 @@ This repo hosts Telegraf service of Edge Insights Software
 	command: ["telegraf -config=/etc/Telegraf/<AppName>/<AppName>.conf -config-directory=/etc/Telegraf/<AppName>/telegraf.d"]
 	```
 
-**Note**: above two points is applicable for adding multiple telegraf instance.
+**Note**: above two points is applicable for adding multiple telegraf instance. But in place of 'AppName', it will be 'ConfigInstance' value. 
 
 ## Adding multiple telegraf instance:
-* User can add multiple instance of telegraf like ia_telegraf1,ia_telegraf2 etc.
+* User can add multiple instance of telegraf like ia_telegraf1,ia_telegraf2 etc. In this case user needs to add additional key 'ConfigInstance' in docker-compose.yml file and it's value will be Telegraf1, Telegraf2 etc. 
 
-* Create a directory inside [config](./config) directory with AppName
+* Create a directory inside [config](./config) directory with 'ConfigInstance' value.
   ```
-  $ mkdir ./config/<Appname>
-  $ cd ./config/<Appname>
+  $ mkdir ./config/<ConfigInstance>
+  $ cd ./config/<ConfigInstance>
   ```
-  keep the main configuration files \<AppName>.conf and \<AppName>_devmode.conf in the previously created directory.
+  keep the main configuration files \<ConfigInstance>.conf and \<ConfigInstance>_devmode.conf in the previously created directory.
 
 All contents inside [config](./config) will be copied inside docker image in /etc/Telegraf in times of docker image building.
 
-**Note**: It's been practice followed by many users, to keep the configuration in a modular way. One of the way to achieve the same could be keeping the additional configuration inside [config](./config)/\<AppName>/telegraf.d. For example:
+**Note**: It's been practice followed by many users, to keep the configuration in a modular way. One of the way to achieve the same could be keeping the additional configuration inside [config](./config)/\<ConfigInstance>/telegraf.d. For example:
 
-create a directory ‘telegraf.d’ inside [config](./config)/\<AppName> :
+create a directory ‘telegraf.d’ inside [config](./config)/\<ConfigInstance> :
    ```
-   $ mkdir config/<AppName>/telegraf.d
-   $ cd config/<AppName>/telegraf.d
+   $ mkdir config/<ConfigInstance>/telegraf.d
+   $ cd config/<ConfigInstance>/telegraf.d
   ```
-   keep additional configuration files inside that directory.
-
+   keep additional configuration files inside that directory and pass the whole command to start the Telegraf in docker-compose.yml file as following:
+	
+```
+	command: ["telegraf -config=/etc/Telegraf/<ConfigInstance>/<ConfigInstance>.conf -config-directory=/etc/Telegraf/<ConfigInstance>/telegraf.d"]
+```
 
 * For adding a new instance user needs to define the telegraf service in [docker-compose.yml](./docker-compose.yml).
 
@@ -48,10 +51,11 @@ create a directory ‘telegraf.d’ inside [config](./config)/\<AppName> :
 	      context: $PWD/../Telegraf
 	      dockerfile: $PWD/../Telegraf/Dockerfile
 	      args:
-		EIS_VERSION: ${EIS_VERSION}
-		EIS_UID: ${EIS_UID}
-		TELEGRAF_VERSION: ${TELEGRAF_VERSION}
-		DOCKER_REGISTRY: ${DOCKER_REGISTRY}
+	        EIS_VERSION: ${EIS_VERSION}
+	        EIS_UID: ${EIS_UID}
+	        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
+	        TELEGRAF_SOURCE_TAG: ${TELEGRAF_SOURCE_TAG}
+	        TELEGRAF_GO_VERSION: ${TELEGRAF_GO_VERSION}
 	    container_name: ia_telegraf1
 	    hostname: ia_telegraf1
 	    network_mode: host
@@ -59,11 +63,10 @@ create a directory ‘telegraf.d’ inside [config](./config)/\<AppName> :
 	    restart: unless-stopped
 	    ipc: "none"
 	    read_only: true
-	    command: ["telegraf -config=/etc/Telegraf/Telegraf1/Telegraf1.conf -config-directory=/etc/Telegraf/Telegraf1/telegraf.d"]
 	    environment:
-	      AppName: "Telegraf1"
-	      InfluxDbAppName: "InfluxDBConnector"
-	      CertType: ""
+	      AppName: "Telegraf"
+	      ConfigInstance: "Telegraf1"
+	      CertType: "pem,zmq"
 	      DEV_MODE: ${DEV_MODE}
 	      no_proxy: ${eis_no_proxy},${ETCD_HOST}
 	      NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
@@ -75,50 +78,12 @@ create a directory ‘telegraf.d’ inside [config](./config)/\<AppName> :
 	    user: ${EIS_UID}
 	    volumes:
 	      - "vol_temp_telegraf:/tmp/"
+	      - "vol_eis_socket:${SOCKET_DIR}"
 	    secrets:
 	      - ca_etcd
-	      - etcd_Telegraf1_cert
-	      - etcd_Telegraf1_key
-    etcd_Telegraf1_cert:
-        file: provision/Certificates/Telegraf/Telegraf1_client_certificate.pem
-    etcd_Telegraf1_key:
-        file: provision/Certificates/Telegraf/Telegraf1_client_key.pem
+	      - etcd_Telegraf_cert
+	      - etcd_Telegraf_key
 	```
-* For adding a new instance user needs to add telegraf config in ../build/provision/config/eis_config.json after runinng "python3.6 eis_builder.py"
-
-```
-    "/Telegraf1/config": {
-        "influxdb": {
-            "dbname": "datain",
-            "password": "admin123",
-            "username": "admin"
-        },
-        "publisher1": {
-            "num_worker": 2,
-            "profiling": "false",
-            "queue_len": 10,
-            "topics_info": [
-                "topic-pfx1:temperature:10:2",
-                "topic-pfx2:pressure::",
-                "topic-pfx3:humidity"
-            ]
-        }
-    },
-    "/Telegraf1/interfaces": {
-        "Subscribers": [
-            {
-                "EndPoint": "127.0.0.1:5569",
-                "Name": "publisher1",
-                "PublisherAppName": "Telegraf",
-                "Topics": [
-                    "*"
-                ],
-                "Type": "zmq_tcp"
-            }
-        ]
-    }
-
-```
 
 
 * Telegraf Instance can be configured with pressure point data ingestion. In the following example, the MQTT input plugin of Telegraf is configured to read pressure point data and stores into ‘point_pressure_data’ measurement.

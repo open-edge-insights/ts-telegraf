@@ -56,7 +56,7 @@ def main():
     app_cfg = ctx.get_app_config()
     app_name = ctx.get_app_name()
     dev_mode = ctx.is_dev_mode()
-
+    cfg_inst = os.getenv('ConfigInstance', app_name)
     log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
                             __name__, dev_mode)
 
@@ -69,12 +69,12 @@ def main():
         if command is None:
             if dev_mode:
                 telegraf_conf = "/etc/Telegraf/" \
-                                + app_name \
+                                + cfg_inst \
                                 + "/" \
-                                + app_name \
+                                + cfg_inst \
                                 + "_devmode.conf"
             else:
-                telegraf_conf = "/etc/Telegraf/"+app_name+"/"+app_name+".conf"
+                telegraf_conf = "/etc/Telegraf/"+cfg_inst+"/"+cfg_inst+".conf"
             subprocess.call(["telegraf", "-config=" + telegraf_conf])
         else:
             subprocess.call(command.split())
