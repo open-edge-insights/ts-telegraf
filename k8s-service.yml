@@ -44,15 +44,13 @@ spec:
         volumeMounts:
           - name: "ca-cert"
             mountPath: /run/secrets/ca_etcd
-          - name: "influxdbconnector-cert"
-            mountPath: /run/secrets/etcd_InfluxDBConnector_cert
-          - name: "influxdbconnector-key"
-            mountPath: /run/secrets/etcd_InfluxDBConnector_key
+          - name: "telegraf-cert"
+            mountPath: /run/secrets/etcd_Telegraf_cert
+          - name: "telegraf-key"
+            mountPath: /run/secrets/etcd_Telegraf_key
         env:
         - name: AppName
           value: "Telegraf"
-        - name: InfluxDbAppName
-          value: "InfluxDBConnector"
         - name: DEV_MODE
           value: '${DEV_MODE}'
         - name: no_proxy
@@ -66,9 +64,9 @@ spec:
         - name: CONFIGMGR_CACERT
           value: "/run/secrets/ca_etcd/ca_certificate.pem"
         - name: CONFIGMGR_CERT
-          value: "/run/secrets/etcd_InfluxDBConnector_cert/InfluxDBConnector_client_certificate.pem"
+          value: "/run/secrets/etcd_Telegraf_cert/Telegraf_client_certificate.pem"
         - name: CONFIGMGR_KEY
-          value: "/run/secrets/etcd_InfluxDBConnector_key/InfluxDBConnector_client_key.pem"
+          value: "/run/secrets/etcd_Telegraf_key/Telegraf_client_key.pem"
         - name: MQTT_BROKER_HOST
           value: "${HOST_IP}"
         - name: INFLUX_SERVER
@@ -77,15 +75,22 @@ spec:
           value: "8086"
         - name: ETCD_PREFIX
           value: '${ETCD_PREFIX}'
+        - name: CertType
+          value: "zmq,pem"
+        - name: SUBSCRIBER_publisher1_ENDPOINT
+          value: "${HOST_IP}:5569"
+        - name: SUBSCRIBER_publisher1_TYPE
+          value: "zmq_tcp"
 
       volumes:
       - name: "ca-cert"
         secret:
           secretName: ca-etcd
-      - name: "influxdbconnector-cert"
+      - name: "telegraf-cert"
         secret:
-          secretName: influxdbconnector-cert
-      - name: "influxdbconnector-key"
+          secretName: telegraf-cert
+      - name: "telegraf-key"
         secret:
-          secretName: influxdbconnector-key
+          secretName: telegraf-key
+
 
