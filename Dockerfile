@@ -74,7 +74,7 @@ RUN mv /src/telegraf/telegraf /usr/local/go/bin/telegraf
 RUN rm -rf /src/telegraf
 
 COPY ./TestPublisherApp /src/TestPublisherApp
-RUN go build -o /src/TestPublisherApp/publisher /src/TestPublisherApp/*.go
+RUN go build -o /src/TestPublisherApp/publisher /src/TestPublisherApp/publisher.go
 
 WORKDIR /EIS
 COPY . ./Telegraf/
