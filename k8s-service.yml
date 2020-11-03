@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -42,6 +43,8 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
+          - name: eis-socket
+            mountPath: ${SOCKET_DIR}
           - name: "ca-cert"
             mountPath: /run/secrets/ca_etcd
           - name: "telegraf-cert"
@@ -77,12 +80,16 @@ spec:
           value: '${ETCD_PREFIX}'
         - name: CertType
           value: "zmq,pem"
-        - name: SUBSCRIBER_publisher1_ENDPOINT
-          value: "${HOST_IP}:5569"
-        - name: SUBSCRIBER_publisher1_TYPE
+        - name: SUBSCRIBER_TYPE
           value: "zmq_tcp"
+        - name: SUBSCRIBER_ENDPOINT
+          value: "eiszmqbroker:60515"
+
 
       volumes:
+      - name: eis-socket
+        hostPath:
+          path: ${EIS_INSTALL_PATH}/sockets
       - name: "ca-cert"
         secret:
           secretName: ca-etcd
