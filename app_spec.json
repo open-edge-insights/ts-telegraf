@@ -22,8 +22,8 @@
             "MQTT_BROKER_HOST": "${HOST_IP}",
             "INFLUX_SERVER": "${ep.inputTelegraf.remoteaddress}",
             "INFLUXDB_PORT": "$INFLUXDB_PORT",
-            "SUBSCRIBER_publisher1_ENDPOINT": "${HOST_IP}:5569",
-            "SUBSCRIBER_publisher1_TYPE": "zmq_tcp"
+            "SUBSCRIBER_ENDPOINT": "${ep.telegrafBrokersub.remoteaddress}:${ep.telegrafBrokersub.remoteport}",
+            "SUBSCRIBER_TYPE": "zmq_tcp"
         },
         "Endpoints": [
             {
@@ -32,6 +32,13 @@
                 "Protocol": "TCP",
                 "DataType": "messages",
                 "Link": "influxout"
+            },
+            {
+                "Name": "telegrafBrokersub",
+                "Endtype": "client",
+                "Protocol": "TCP",
+                "DataType": "messages",
+                "Link": "brokerPubout"
             }
         ]
     }
