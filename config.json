@@ -5,7 +5,7 @@
             "password": "admin123",
             "dbname": "datain"
         },
-        "publisher1": {
+        "default": {
             "topics_info": [
                 "topic-pfx1:temperature:10:2",
                 "topic-pfx2:pressure::",
@@ -19,7 +19,7 @@
     "interfaces": {
         "Subscribers": [
             {
-                "Name": "publisher1",
+                "Name": "default",
 		"PublisherAppName": "Telegraf",
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:60515",

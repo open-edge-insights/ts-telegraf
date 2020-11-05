@@ -47,7 +47,10 @@ func (pluginSubObj *pluginSubscriber) initEisMsgBusConfigMap() error {
 		return fmt.Errorf("Failed to get the subscriber: %v", err)
 	}
 
-	pluginSubObj.subTopics = subCtx.GetTopics()
+	pluginSubObj.subTopics, err = subCtx.GetTopics()
+	if err != nil {
+		return fmt.Errorf("Failed to get the Topics: %v", err)
+	}
 	if len(pluginSubObj.subTopics) == 0 {
 		return fmt.Errorf("No topics in etcd interface\n")
 	}
