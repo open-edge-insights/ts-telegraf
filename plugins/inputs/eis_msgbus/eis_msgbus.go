@@ -196,11 +196,15 @@ func (emb *EisMsgbus) Start(ac telegraf.Accumulator) error {
 
 	if err := emb.readConfig(); err != nil {
 		emb.Log.Errorf(err.Error())
-		return err
+		emb.pluginSubObj.pluginRtData = nil
+		// Return nil to make sure Telegraf does not restart
+		return nil
 	}
 	if err := emb.initEisBus(); err != nil {
 		emb.Log.Errorf(err.Error())
-		return err
+		emb.pluginSubObj.pluginRtData = nil
+		// Return nil to make sure Telegraf does not restart
+		return nil
 	}
 	return nil
 }
@@ -212,6 +216,10 @@ func (emb *EisMsgbus) SetParser(parser parsers.Parser) {
 
 // Stop : Will be called by telegraf engine and it stops all threads in plugin
 func (emb *EisMsgbus) Stop() {
+
+	if emb.pluginSubObj.pluginRtData == nil {
+		return
+	}
 
 	emb.Log.Infof("Shutting down subscriber")
 	emb.pluginSubObj.sendShutdownSignal()
