@@ -88,4 +88,6 @@ RUN apt-get remove -y wget && \
     apt-get remove curl && \
     apt-get autoremove -y
 
+HEALTHCHECK NONE
+
 ENTRYPOINT ["python3.6","Telegraf/telegraf_start.py"]
