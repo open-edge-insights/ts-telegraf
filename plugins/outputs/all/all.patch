@@ -1,0 +1,8 @@
+--- all.go	2021-01-18 00:44:23.916766015 +0530
++++ all-new.go	2021-01-18 00:46:13.340766002 +0530
+@@ -35,4 +35,5 @@
+ 	_ "github.com/influxdata/telegraf/plugins/outputs/syslog"
+ 	_ "github.com/influxdata/telegraf/plugins/outputs/warp10"
+ 	_ "github.com/influxdata/telegraf/plugins/outputs/wavefront"
++	_ "github.com/influxdata/telegraf/plugins/outputs/eis_msgbus"
+ )

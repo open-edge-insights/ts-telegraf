@@ -69,6 +69,11 @@ COPY ./plugins/inputs/eis_msgbus /src/telegraf/plugins/inputs/eis_msgbus
 # Applying the patch to only single file.
 RUN patch -p0 ./plugins/inputs/all/all.go -i /tmp/all.patch && rm -f /tmp/all.patch
 
+COPY ./plugins/outputs/all/all.patch /tmp/all.patch
+COPY ./plugins/outputs/eis_msgbus /src/telegraf/plugins/outputs/eis_msgbus
+
+RUN patch -p0 ./plugins/outputs/all/all.go -i /tmp/all.patch && rm -f /tmp/all.patch
+
 RUN make
 RUN mv /src/telegraf/telegraf /usr/local/go/bin/telegraf
 RUN rm -rf /src/telegraf
