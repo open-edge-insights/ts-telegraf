@@ -34,6 +34,8 @@ services:
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
         TELEGRAF_SOURCE_TAG: ${TELEGRAF_SOURCE_TAG}
         TELEGRAF_GO_VERSION: ${TELEGRAF_GO_VERSION}
+        UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
+        CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
     container_name: ia_telegraf
     hostname: ia_telegraf
     network_mode: host
