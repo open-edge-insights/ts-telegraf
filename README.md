@@ -7,20 +7,20 @@
 
 3. [MQTT sample configuration and tool to test it](#MQTT-sample-configuration-and-tool-to-test-it)
 
-4. [Enabling EIS message bus input plugin in Telegraf](#Enabling-EIS-message-bus-input-plugin-in-Telegraf)
+4. [Enabling EII message bus input plugin in Telegraf](#Enabling-EII-message-bus-input-plugin-in-Telegraf)
 
-5. [Advanced: Multiple plugin sections of EIS message bus input plugin](#Advanced:-Multiple-plugin-sections-of-EIS-message-bus-input-plugin)
+5. [Advanced: Multiple plugin sections of EII message bus input plugin](#Advanced:-Multiple-plugin-sections-of-EII-message-bus-input-plugin)
 
 6. [Optional: Adding multiple telegraf instances](#Optional:-Adding-multiple-telegraf-instances)
 
 ## Telegraf in brief
 -------------------
-Telegraf is a part of TICK stack (https://www.influxdata.com/time-series-platform/). This is a plugin based agent.  Telegraf has many input and output plugins. In EIS's basic configuration, it's being used for data ingestion. However EIS framework does not restrict Telegraf's any of the features. In EIS basic configuration uses Telegraf for data ingestion and sending it to influxdb. 
+Telegraf is a part of TICK stack (https://www.influxdata.com/time-series-platform/). This is a plugin based agent.  Telegraf has many input and output plugins. In EII's basic configuration, it's being used for data ingestion. However EII framework does not restrict Telegraf's any of the features. In EII basic configuration uses Telegraf for data ingestion and sending it to influxdb. 
 
 ## Telegraf's default configuration
 1. Telegraf starts with the default configuration which is present at [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf) (for the dev mode the name is 'Telegraf_devmode.conf'). By default the below plugins are enabled.
 	- 	MQTT input plugin (**[[inputs.mqtt_consumer]]**)
-	- 	EIS message bus input plugin (**[[inputs.eis_msgbus]]**)
+	- 	EII message bus input plugin (**[[inputs.eii_msgbus]]**)
 	- 	Influxdb output plugin (**[[outputs.influxdb]]**)
 
 Telegraf will be started using script 'telegraf_start.py. This script will get the configuration from ETCD first and then it will start the  Telegraf service by picking the right configuration depending on the developer/production mode. By default only single instance of Telegraf container runs (named 'ia_telegraf').
@@ -68,18 +68,18 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
 	```
 please refer [tools/mqtt-publisher/README.md](../tools/mqtt-publisher/README.md)
 
-## Enabling EIS message bus input plugin in Telegraf
+## Enabling EII message bus input plugin in Telegraf
 
 **Purpose**
-Receiving the data from EIS message bus and storing it into influx db, at scale.
+Receiving the data from EII message bus and storing it into influx db, at scale.
 
 **Overview**
 
 The plugin subscribes to configured topic / topic prefixes. Plugin has component
-called subscriber which receives the data from eis message bus.
+called subscriber which receives the data from eii message bus.
 After receiving the data, depending on configuration, the plugin process
 the data, either synchronously or asynchronously. 
-- In synchronous processing, the receiver thread (thread which receives the data from EIS message bus) is also resposible for the processing of the data (json parsing). After processing the previous data only, the receiver thread process next data available on the EIS message bus. 
+- In synchronous processing, the receiver thread (thread which receives the data from EII message bus) is also resposible for the processing of the data (json parsing). After processing the previous data only, the receiver thread process next data available on the EII message bus. 
 - In asynchronous processing the  receiver thread  receives the data and put it into the queue. There will be pool of threads which will be dequeing the data from the queue and processing it.
 
 **Guidelines for choosing the data processing options are**
@@ -94,7 +94,7 @@ Configuration of the plugin is divided into two parts
 2. Configuration in Telegraf.conf file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 **ETCD configuration**
-Since this is eis message bus plugin and so it's part of EIS framework,
+Since this is eii message bus plugin and so it's part of EII framework,
 message bus configuration and plugin's topic specific configuration is kept into etcd.
 Below is the sample configuration
 
@@ -126,16 +126,16 @@ Below is the sample configuration
                 "Topics": [
                     "*"
                 ],
-                "PublisherAppName": "EISZmqBroker"
+                "PublisherAppName": "EIIZmqBroker"
             }
         ]
     }
 }
 ```
 **Brief description of the configuration**.
-Like any other EIS service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eis interface details. Let's have more information of "config" section.
+Like any other EII service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
 
-config :  Contains the configuration of the influxdb (**"influxdb"**) and  eis messagebus input plugin (**"default"**). In the above sample configuration, the **"default"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
+config :  Contains the configuration of the influxdb (**"influxdb"**) and  eii messagebus input plugin (**"default"**). In the above sample configuration, the **"default"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 - topics_info : This is an array of topic prefix configuration, where user specifies, how the data from topic-prefix should be processed. Below is the  way every line in the topic information should be interpreted.
 	1. "topic-pfx1:temperature:10:2" : Process data from topic prefix 'topic-pfx1' asynchronously using the dedicated queue of length 10 and dedicated thread pool of size 2. And the processed data will be stored at measurement named 'temperature' in influxdb.
@@ -160,7 +160,7 @@ config :  Contains the configuration of the influxdb (**"influxdb"**) and  eis m
 
 The plugin instance name is an additional key, kept into plugin configuration section. This key is used to fetch the configuration from ETCD. Below is the minimmum, sample configuration with single plugin instance.
 
-    [[inputs.eis_msgbus]]
+    [[inputs.eii_msgbus]]
     **instance_name = "default"**
     data_format = "json"
     json_strict = true
@@ -172,10 +172,10 @@ Since it’s telegraf input plugin, the telegraf’s parser configuration
 has to be in Telegraf.conf file. The more information of the telegraf json parser plugin can be be found at https://github.com/influxdata/telegraf/tree/master/plugins/parsers/json.*
 In case if there are multiple telegraf instances, then the location of the Telegraf configuration files would be different. For more details please refer the section [Optional: Adding multiple telegraf instance](#Optional: Adding multiple telegraf instance)
 
-## Advanced: Multiple plugin sections of EIS message bus input plugin
-Like any other Telegraf plugin user can keep multiple configuration sections of the EIS message bus input plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
+## Advanced: Multiple plugin sections of EII message bus input plugin
+Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus input plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
 
-Let's have an example for the same. Let's assume there are two EIS apps, one with the AppName "EIS_APP1" and another with the AppName "EIS_APP2", which are publishing the data to eis message bus.
+Let's have an example for the same. Let's assume there are two EII apps, one with the AppName "EII_APP1" and another with the AppName "EII_APP2", which are publishing the data to eii message bus.
 *The Telegraf's ETCD configuration for the same is*
 ```json
 {
@@ -210,7 +210,7 @@ Let's have an example for the same. Let's assume there are two EIS apps, one wit
                "*"
             ],
             "Type":"zmq_tcp",
-			"PublisherAppName": "EIS_APP1"
+			"PublisherAppName": "EII_APP1"
          },
          {
             "Name":"publisher2",
@@ -221,7 +221,7 @@ Let's have an example for the same. Let's assume there are two EIS apps, one wit
                "topic-pfx23"
             ],
             "Type":"zmq_tcp",
-			"PublisherAppName": "EIS_APP2"
+			"PublisherAppName": "EII_APP2"
          }
       ]
    }
@@ -229,12 +229,12 @@ Let's have an example for the same. Let's assume there are two EIS apps, one wit
 ```
 *The Telegraf.conf configuration sections for the same is*
 
-    [[inputs.eis_msgbus]]
+    [[inputs.eii_msgbus]]
     instance_name = "publisher1"
     data_format = "json"
     json_strict = true
     
-    [[inputs.eis_msgbus]]
+    [[inputs.eii_msgbus]]
     instance_name = "publisher2"
     data_format = "json"
     json_strict = true
@@ -268,15 +268,15 @@ For $ConfigInstance = 'Telegraf1'
 	      context: $PWD/../Telegraf
 	      dockerfile: $PWD/../Telegraf/Dockerfile
 	      args:
-	        EIS_VERSION: ${EIS_VERSION}
-	        EIS_UID: ${EIS_UID}
+	        EII_VERSION: ${EII_VERSION}
+	        EII_UID: ${EII_UID}
 	        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
 	        TELEGRAF_SOURCE_TAG: ${TELEGRAF_SOURCE_TAG}
 	        TELEGRAF_GO_VERSION: ${TELEGRAF_GO_VERSION}
 	    container_name: ia_telegraf1
 	    hostname: ia_telegraf1
 	    network_mode: host
-	    image: ${DOCKER_REGISTRY}ia_telegraf:${EIS_VERSION}
+	    image: ${DOCKER_REGISTRY}ia_telegraf:${EII_VERSION}
 	    restart: unless-stopped
 	    ipc: "none"
 	    read_only: true
@@ -285,17 +285,17 @@ For $ConfigInstance = 'Telegraf1'
 	      ConfigInstance: "Telegraf1"
 	      CertType: "pem,zmq"
 	      DEV_MODE: ${DEV_MODE}
-	      no_proxy: ${eis_no_proxy},${ETCD_HOST}
-	      NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
+	      no_proxy: ${eii_no_proxy},${ETCD_HOST}
+	      NO_PROXY: ${eii_no_proxy},${ETCD_HOST}
 	      ETCD_HOST: ${ETCD_HOST}
 	      MQTT_BROKER_HOST: '127.0.0.1'
 	      INFLUX_SERVER: '127.0.0.1'
 	      INFLUXDB_PORT: $INFLUXDB_PORT
 	      ETCD_PREFIX: ${ETCD_PREFIX}
-	    user: ${EIS_UID}
+	    user: ${EII_UID}
 	    volumes:
 	      - "vol_temp_telegraf:/tmp/"
-	      - "vol_eis_socket:${SOCKET_DIR}"
+	      - "vol_eii_socket:${SOCKET_DIR}"
 	    secrets:
 	      - ca_etcd
 	      - etcd_Telegraf_cert

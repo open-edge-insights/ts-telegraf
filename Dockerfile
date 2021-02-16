@@ -20,21 +20,21 @@
 
 # Dockerfile for Telegraf
 
-ARG EIS_VERSION
+ARG EII_VERSION
 ARG DOCKER_REGISTRY
-FROM ${DOCKER_REGISTRY}ia_eisbase:$EIS_VERSION as eisbase
+FROM ${DOCKER_REGISTRY}ia_eiibase:$EII_VERSION as eiibase
 LABEL description="Telegraf image"
 
 ENV PYTHONPATH ${PYTHONPATH}:.
 
-ARG EIS_UID
+ARG EII_UID
 RUN mkdir -p /etc/ssl/ca && \
-    chown -R ${EIS_UID} /etc/ssl/
+    chown -R ${EII_UID} /etc/ssl/
 
 ARG DOCKER_REGISTRY
-FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
+FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
 
-FROM eisbase
+FROM eiibase
 
 COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
 COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
@@ -48,7 +48,7 @@ ARG TELEGRAF_GO_VERSION
 RUN wget https://golang.org/dl/go${TELEGRAF_GO_VERSION}.linux-amd64.tar.gz && \
     rm -rf /usr/local/go && tar -C /usr/local -xzf go${TELEGRAF_GO_VERSION}.linux-amd64.tar.gz
 
-COPY --from=common ${GO_WORK_DIR}/../EISMessageBus /usr/local/go/src/EISMessageBus
+COPY --from=common ${GO_WORK_DIR}/../EIIMessageBus /usr/local/go/src/EIIMessageBus
 COPY --from=common ${GO_WORK_DIR}/../ConfigMgr /usr/local/go/src/ConfigMgr
 
 ARG TELEGRAF_SOURCE_TAG
@@ -64,13 +64,13 @@ ENV TELEGRAF_SRC_DIR /src/telegraf
 WORKDIR ${TELEGRAF_SRC_DIR}
 RUN go get google.golang.org/grpc@v1.26.0
 COPY ./plugins/inputs/all/all.patch /tmp/all.patch
-COPY ./plugins/inputs/eis_msgbus /src/telegraf/plugins/inputs/eis_msgbus
+COPY ./plugins/inputs/eii_msgbus /src/telegraf/plugins/inputs/eii_msgbus
 
 # Applying the patch to only single file.
 RUN patch -p0 ./plugins/inputs/all/all.go -i /tmp/all.patch && rm -f /tmp/all.patch
 
 COPY ./plugins/outputs/all/all.patch /tmp/all.patch
-COPY ./plugins/outputs/eis_msgbus /src/telegraf/plugins/outputs/eis_msgbus
+COPY ./plugins/outputs/eii_msgbus /src/telegraf/plugins/outputs/eii_msgbus
 
 RUN patch -p0 ./plugins/outputs/all/all.go -i /tmp/all.patch && rm -f /tmp/all.patch
 
@@ -81,7 +81,7 @@ RUN rm -rf /src/telegraf
 COPY ./TestPublisherApp /src/TestPublisherApp
 RUN go build -o /src/TestPublisherApp/publisher /src/TestPublisherApp/publisher.go
 
-WORKDIR /EIS
+WORKDIR /EII
 COPY . ./Telegraf/
 RUN mkdir /etc/Telegraf && \
     cp -r ./Telegraf/config/* /etc/Telegraf/ && \

@@ -20,16 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eiscfgmgr "ConfigMgr/eisconfigmgr"
-	eismsgbus "EISMessageBus/eismsgbus"
+	eiicfgmgr "ConfigMgr/eiiconfigmgr"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
 	"github.com/influxdata/telegraf"
 )
 
-type eisMsgbusOutputPluginConfig struct {
-	instanceName        string //eis messagebus plugin instance name
+type eiiMsgbusOutputPluginConfig struct {
+	instanceName        string //eii messagebus plugin instance name
 	profiling           bool // true when profiling is on, else false
 	devmode             bool // true in case of developer mode else false
 	measurements        []string //list of measurement for publishing data
@@ -37,12 +37,12 @@ type eisMsgbusOutputPluginConfig struct {
 
 
 type pluginPublisher struct {
-	msgBusClient       *eismsgbus.MsgbusClient          // eis messsagebus client
-	msgBusPubMap       map[string]*eismsgbus.Publisher // eis messagebus publisher handels for topic
-	pluginConfigObj    *eisMsgbusOutputPluginConfig      // ref to plugin config object
-	eisMsgBusConfigMap map[string]interface{}           // eis messagbus config
+	msgBusClient       *eiimsgbus.MsgbusClient          // eii messsagebus client
+	msgBusPubMap       map[string]*eiimsgbus.Publisher // eii messagebus publisher handels for topic
+	pluginConfigObj    *eiiMsgbusOutputPluginConfig      // ref to plugin config object
+	eiiMsgBusConfigMap map[string]interface{}           // eii messagbus config
 	Log                telegraf.Logger                  // telegraf logger object
-	confMgr            *eiscfgmgr.ConfigMgr             // Config manager reference
+	confMgr            *eiicfgmgr.ConfigMgr             // Config manager reference
 }
 
 type pubData struct {

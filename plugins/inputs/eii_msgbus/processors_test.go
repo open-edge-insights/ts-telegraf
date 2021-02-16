@@ -20,27 +20,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eismsgbustype "EISMessageBus/pkg/types"
+	eiimsgbustype "EIIMessageBus/pkg/types"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
-func TestThreadPool(t *testing.T) {
-	fmt.Printf("\n===========In TestThreadPool=========\n")
-	eisMsgBus := NewTestEisMsgbus()
+func NewTopicRuntimeData() *tpRuntimeData {
+	temp := new(tpRuntimeData)
+	temp.mName = "temperature"
+	temp.tpName = "temperature"
+	return temp
+}
+
+func TestSimpleMsgProcessor(t *testing.T) {
+	fmt.Printf("\n===========In SimpleMsgProcessor=========\n")
+	eiiMsgBus := NewTestEiiMsgbus()
 	var processor simpleMsgProcessor
 	topicRtData := NewTopicRuntimeData()
-	topicRtData.parser = eisMsgBus.parser
-	topicRtData.writer = telegrafAccWriter{ac: eisMsgBus.ac}
-	dataChannel := make(chan dataFromMsgBus, 10)
-	topicRtData.dataChannel = dataChannel
-
+	topicRtData.parser = eiiMsgBus.parser
+	topicRtData.writer = telegrafAccWriter{ac: eiiMsgBus.ac}
 	jsonMsg := map[string]interface{}{
 		"str":   "hello",
 		"intr":  2.0,
@@ -57,25 +60,9 @@ func TestThreadPool(t *testing.T) {
 	}
 
 	buffer, err := json.Marshal(jsonMsg)
-	assert.NoError(t, err)
 
-	msg := eismsgbustype.NewMsgEnvelope(nil, buffer)
+	msg := eiimsgbustype.NewMsgEnvelope(nil, buffer)
 	msg.Name = "topic-name"
-	d := dataFromMsgBus{msg: msg, profInfo: nil}
-	dataChannel <- d
-	dataChannel <- d
-	dataChannel <- d
-	dataChannel <- d
-	numElm := len(dataChannel)
-
-	pool := threadPool{}
-	pool.initThrPool(processor, topicRtData, 2, eisMsgBus.Log)
-	pool.setName("GLOBAL")
-	pool.start()
-	time.Sleep(5000 * time.Millisecond)
-	pool.sendShutdownSignal()
-	pool.waitForShutdown()
-	numElm = len(dataChannel)
-	assert := assert.New(t)
-	assert.Equal(numElm, 0, "Test TestThreadPool failed")
+	err = processor.processData(topicRtData, dataFromMsgBus{msg: msg, profInfo: nil})
+	assert.NoError(t, err)
 }

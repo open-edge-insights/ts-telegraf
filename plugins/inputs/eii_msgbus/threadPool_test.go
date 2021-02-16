@@ -20,10 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eismsgbustype "EISMessageBus/pkg/types"
+	eiimsgbustype "EIIMessageBus/pkg/types"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -31,8 +31,16 @@ import (
 	"time"
 )
 
-// This function returns the test json meesage
-func getTestJsonData() map[string]interface{} {
+func TestThreadPool(t *testing.T) {
+	fmt.Printf("\n===========In TestThreadPool=========\n")
+	eiiMsgBus := NewTestEiiMsgbus()
+	var processor simpleMsgProcessor
+	topicRtData := NewTopicRuntimeData()
+	topicRtData.parser = eiiMsgBus.parser
+	topicRtData.writer = telegrafAccWriter{ac: eiiMsgBus.ac}
+	dataChannel := make(chan dataFromMsgBus, 10)
+	topicRtData.dataChannel = dataChannel
+
 	jsonMsg := map[string]interface{}{
 		"str":   "hello",
 		"intr":  2.0,
@@ -47,50 +55,27 @@ func getTestJsonData() map[string]interface{} {
 		"arr":   []interface{}{"test", 123.0},
 		"empty": nil,
 	}
-	return jsonMsg
-}
-
-// This function publishes the message to subscriber checks whether the plugin has processed it ot not
-func testSubscriber(t *testing.T, eisMsgBus *EisMsgbus, jsonMsg map[string]interface{}, testCaseName string) {
-	err := eisMsgBus.Start(eisMsgBus.ac)
-	assert.NoError(t, err)
 
 	buffer, err := json.Marshal(jsonMsg)
-	buffer = buffer
 	assert.NoError(t, err)
 
-	for key, _ := range eisMsgBus.pluginConfigObj.mapOfPrefixToConfig {
-		msg := eismsgbustype.NewMsgEnvelope(nil, buffer)
-		msg.Name = key
-		for _, sub := range eisMsgBus.pluginSubObj.msgBusSubMap {
-			sub.MessageChannel <- msg
-		}
-	}
+	msg := eiimsgbustype.NewMsgEnvelope(nil, buffer)
+	msg.Name = "topic-name"
+	d := dataFromMsgBus{msg: msg, profInfo: nil}
+	dataChannel <- d
+	dataChannel <- d
+	dataChannel <- d
+	dataChannel <- d
+	numElm := len(dataChannel)
 
-	time.Sleep(10000 * time.Millisecond)
-
-	for _, sub := range eisMsgBus.pluginSubObj.msgBusSubMap {
-		numElm := len(sub.MessageChannel)
-		assert := assert.New(t)
-		message := testCaseName + " failed"
-		assert.Equal(numElm, 0, message)
-	}
-
-	go eisMsgBus.Stop()
-}
-
-// Test With Smaple publisher
-func TestSubscriber(t *testing.T) {
-	fmt.Printf("\n===========In TestSubscriber=========\n")
-	eisMsgBus := NewTestEisMsgbus()
-	jsonMsg := getTestJsonData()
-	testSubscriber(t, eisMsgBus, jsonMsg, "TestSubscriber")
-}
-
-func TestSubscriberWithProfiler(t *testing.T) {
-	fmt.Printf("\n===========In TestSubscriberWithProfiler=========\n")
-	eisMsgBus := NewTestEisMsgbus()
-	eisMsgBus.pluginConfigObj.profiling = true
-	jsonMsg := getTestJsonData()
-	testSubscriber(t, eisMsgBus, jsonMsg, "TestSubscriberWithProfiler")
+	pool := threadPool{}
+	pool.initThrPool(processor, topicRtData, 2, eiiMsgBus.Log)
+	pool.setName("GLOBAL")
+	pool.start()
+	time.Sleep(5000 * time.Millisecond)
+	pool.sendShutdownSignal()
+	pool.waitForShutdown()
+	numElm = len(dataChannel)
+	assert := assert.New(t)
+	assert.Equal(numElm, 0, "Test TestThreadPool failed")
 }

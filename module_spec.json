@@ -2,25 +2,25 @@
     "SchemaVersion": "0.2",
     "Runtime": "docker",
     "RuntimeOptions": {
-        "ContainerImage": "${idx:ia_telegraf:$EIS_VERSION}"
+        "ContainerImage": "${idx:ia_telegraf:$EII_VERSION}"
     },
     "DataStore": {
         "Protocol": "DIRECT",
         "DataBuckets": [
             {
-                "Name": "EIS/Telegraf",
+                "Name": "EII/Telegraf",
                 "Permissions": "RO"
             },
             {
-                "Name": "EIS/GlobalEnv",
+                "Name": "EII/GlobalEnv",
                 "Permissions": "RO"
             },
             {
-                "Name": "EIS/Publickeys",
+                "Name": "EII/Publickeys",
                 "Permissions": "RO"
             },
 	    {
-		"Name": "EIS/InfluxDBConnector",
+		"Name": "EII/InfluxDBConnector",
 		"Permissions": "RO"
             }
         ]

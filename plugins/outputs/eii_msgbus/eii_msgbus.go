@@ -20,11 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-    eiscfgmgr "ConfigMgr/eisconfigmgr"
-    eismsgbus "EISMessageBus/eismsgbus"
+    eiicfgmgr "ConfigMgr/eiiconfigmgr"
+    eiimsgbus "EIIMessageBus/eiimsgbus"
     "github.com/influxdata/telegraf"
     "github.com/influxdata/telegraf/plugins/outputs"
     "github.com/influxdata/telegraf/plugins/serializers"
@@ -33,22 +33,22 @@ import (
 )
 
 
-type EisMsgbus struct {
+type EiiMsgbus struct {
     Instance_name   string `toml:"instance_name"`
-    pluginConfigObj eisMsgbusOutputPluginConfig
+    pluginConfigObj eiiMsgbusOutputPluginConfig
     pluginPubObj    pluginPublisher
     Log             telegraf.Logger
-    confMgr         *eiscfgmgr.ConfigMgr
+    confMgr         *eiicfgmgr.ConfigMgr
     serializer      serializers.Serializer
 }
 
-func (emb *EisMsgbus) SetSerializer(serializer serializers.Serializer) {
+func (emb *EiiMsgbus) SetSerializer(serializer serializers.Serializer) {
     emb.serializer = serializer
 }
 
 // Description : A short description for a plugin
-func (emb *EisMsgbus) Description() string {
-    return "Publisher for EIS topics"
+func (emb *EiiMsgbus) Description() string {
+    return "Publisher for EII topics"
 }
 
 const sampleConfig = `
@@ -100,13 +100,13 @@ instance_name = "publisher1"
 `
 
 // SampleConfig : Will be called by telegraf engine
-func (emb *EisMsgbus) SampleConfig() string {
+func (emb *EiiMsgbus) SampleConfig() string {
     return sampleConfig
 }
 
 // Init is for setup, and validating config.
-func (emb *EisMsgbus) Init() error {
-    confMgr, err := eiscfgmgr.ConfigManager()
+func (emb *EiiMsgbus) Init() error {
+    confMgr, err := eiicfgmgr.ConfigManager()
     if err != nil {
         emb.Log.Errorf(err.Error())
         return err
@@ -121,7 +121,7 @@ func (emb *EisMsgbus) Init() error {
         emb.Log.Errorf(err.Error())
         return err
     }
-    if err := emb.initEisBus(); err != nil {
+    if err := emb.initEiiBus(); err != nil {
         emb.Log.Errorf(err.Error())
         return err
     }
@@ -130,10 +130,10 @@ func (emb *EisMsgbus) Init() error {
 
 
 // Creates the messagebus config and messagebus client 
-func (emb *EisMsgbus) initEisBus() error {
-    emb.pluginPubObj.msgBusPubMap = make(map[string]*eismsgbus.Publisher)
+func (emb *EiiMsgbus) initEiiBus() error {
+    emb.pluginPubObj.msgBusPubMap = make(map[string]*eiimsgbus.Publisher)
     // Create messagebus config
-    if err := emb.pluginPubObj.initEisMsgBusConfigMap(); err != nil {
+    if err := emb.pluginPubObj.initEiiMsgBusConfigMap(); err != nil {
         return err
     }
 
@@ -145,8 +145,8 @@ func (emb *EisMsgbus) initEisBus() error {
     return nil
 }
 
-// Convert the plugin configuration into eisMsgbusOutputPluginConfig object
-func (emb *EisMsgbus) readConfig() error {
+// Convert the plugin configuration into eiiMsgbusOutputPluginConfig object
+func (emb *EiiMsgbus) readConfig() error {
     if err := emb.pluginConfigObj.initConfig(emb); err != nil {
         return err
     }
@@ -154,7 +154,7 @@ func (emb *EisMsgbus) readConfig() error {
     return nil
 }
 
-func (emb *EisMsgbus) Connect() error {
+func (emb *EiiMsgbus) Connect() error {
     // Make any connection required here
     if emb.pluginConfigObj.measurements[0] != "*" {
         for _, measurement := range emb.pluginConfigObj.measurements {
@@ -164,7 +164,7 @@ func (emb *EisMsgbus) Connect() error {
     return nil
 }
 
-func (emb *EisMsgbus) Close() error {
+func (emb *EiiMsgbus) Close() error {
     // Close any connections here.
     // Write will not be called once Close is called, so there is no need to synchronize.
     emb.pluginPubObj.StopAllPublisher()
@@ -176,7 +176,7 @@ func (emb *EisMsgbus) Close() error {
 // Write should write immediately to the output, and not buffer writes
 // (Telegraf manages the buffer for you). Returning an error will fail this
 // batch of writes and the entire batch will be retried automatically.
-func (emb *EisMsgbus) Write(metrics []telegraf.Metric) error {
+func (emb *EiiMsgbus) Write(metrics []telegraf.Metric) error {
     var msgBusData pubData
     var err error
     msgBusData.profInfo = make(map[string]interface{})
@@ -196,5 +196,5 @@ func (emb *EisMsgbus) Write(metrics []telegraf.Metric) error {
 }
 
 func init() {
-    outputs.Add("eis_msgbus", func() telegraf.Output { return &EisMsgbus{} })
+    outputs.Add("eii_msgbus", func() telegraf.Output { return &EiiMsgbus{} })
 }

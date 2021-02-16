@@ -17,14 +17,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-package eis_msgbus
+package eii_msgbus
 import (
 	"fmt"
 	"strconv"
 )
 
 // Converts the plugin configuration into plugin configuration object of type pluginConfigObj.
-func (pluginConfigObj *eisMsgbusOutputPluginConfig) initConfig(emb *EisMsgbus) error {
+func (pluginConfigObj *eiiMsgbusOutputPluginConfig) initConfig(emb *EiiMsgbus) error {
 
 	appConfig, err := emb.confMgr.GetAppConfig()
 	if err != nil {

@@ -30,7 +30,7 @@
                 "Topics": [
                     "*"
                 ],
-                "PublisherAppName": "EISZmqBroker"
+                "PublisherAppName": "EIIZmqBroker"
             }
         ],
         "Publishers": [

@@ -3,9 +3,9 @@
         "Name": "Telegraf",
         "Description": "Telegraf module manifest",
         "SchemaVersion": "0.2",
-        "ManifestFile": "${idx:telegraf:$EIS_VERSION}",
-        "RunAsUser": "$EIS_UID",
-        "RunAsGroup": "$EIS_UID",
+        "ManifestFile": "${idx:telegraf:$EII_VERSION}",
+        "RunAsUser": "$EII_UID",
+        "RunAsGroup": "$EII_UID",
         "Resources": {
             "CPU": 100,
             "MemoryMB": 100

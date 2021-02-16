@@ -20,18 +20,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eismsgbus "EISMessageBus/eismsgbus"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
 	"fmt"
 	"time"
 )
 
-// Creates new eis messagebus client handle
+// Creates new eii messagebus client handle
 func (pluginSubObj *pluginSubscriber) createClient() error {
 	var err error
-	pluginSubObj.msgBusClient, err = eismsgbus.NewMsgbusClient(pluginSubObj.eisMsgBusConfigMap)
+	pluginSubObj.msgBusClient, err = eiimsgbus.NewMsgbusClient(pluginSubObj.eiiMsgBusConfigMap)
 	if err != nil {
 		return fmt.Errorf("-- Error creating context: %v", err)
 	}
@@ -39,8 +39,8 @@ func (pluginSubObj *pluginSubscriber) createClient() error {
 	return nil
 }
 
-// Creates the eis message bus config from plugin config object
-func (pluginSubObj *pluginSubscriber) initEisMsgBusConfigMap() error {
+// Creates the eii message bus config from plugin config object
+func (pluginSubObj *pluginSubscriber) initEiiMsgBusConfigMap() error {
 
 	subCtx, err := pluginSubObj.confMgr.GetSubscriberByName(pluginSubObj.pluginConfigObj.instanceName)
 	if err != nil {
@@ -57,18 +57,18 @@ func (pluginSubObj *pluginSubscriber) initEisMsgBusConfigMap() error {
 
 	pluginSubObj.Log.Infof("Topics configured are %v", pluginSubObj.subTopics)
 
-	pluginSubObj.eisMsgBusConfigMap, err = subCtx.GetMsgbusConfig()
+	pluginSubObj.eiiMsgBusConfigMap, err = subCtx.GetMsgbusConfig()
 	if err != nil {
-		return fmt.Errorf("Error while getting eis message bus config: %v\n", err)
+		return fmt.Errorf("Error while getting eii message bus config: %v\n", err)
 	}
-	pluginSubObj.Log.Debugf("Plugin config is %v", pluginSubObj.eisMsgBusConfigMap)
+	pluginSubObj.Log.Debugf("Plugin config is %v", pluginSubObj.eiiMsgBusConfigMap)
 
 	return nil
 }
 
 // Creates the subscriber for each topic prefix
 func (pluginSubObj *pluginSubscriber) subcribeToAllTopics() error {
-	pluginSubObj.msgBusSubMap = make(map[string]*eismsgbus.Subscriber)
+	pluginSubObj.msgBusSubMap = make(map[string]*eiimsgbus.Subscriber)
 	for _, topic := range pluginSubObj.subTopics {
 		pluginSubObj.Log.Infof("Creating subscriber for a topic %v", topic)
 		sub, err := pluginSubObj.msgBusClient.NewSubscriber(topic)

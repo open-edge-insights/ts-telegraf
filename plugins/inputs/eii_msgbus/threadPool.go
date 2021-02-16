@@ -20,14 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
 	"github.com/influxdata/telegraf"
 	"time"
 )
 
-func (pool *threadPool) initThrPool(processor eisMsgProcessor, tpRtInfo *tpRuntimeData, poolSize int, Log telegraf.Logger) {
+func (pool *threadPool) initThrPool(processor eiiMsgProcessor, tpRtInfo *tpRuntimeData, poolSize int, Log telegraf.Logger) {
 	pool.processor = processor
 	pool.tpRtInfo = tpRtInfo
 	pool.poolSize = poolSize

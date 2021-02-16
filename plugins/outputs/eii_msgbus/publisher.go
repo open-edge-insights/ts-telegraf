@@ -20,19 +20,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eismsgbus "EISMessageBus/eismsgbus"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
 	"fmt"
 	"time"
 	"strconv"
 )
 
-// Creates new eis messagebus client handle
+// Creates new eii messagebus client handle
 func (pluginPubObj *pluginPublisher) createClient() error {
 	var err error
-	pluginPubObj.msgBusClient, err = eismsgbus.NewMsgbusClient(pluginPubObj.eisMsgBusConfigMap)
+	pluginPubObj.msgBusClient, err = eiimsgbus.NewMsgbusClient(pluginPubObj.eiiMsgBusConfigMap)
 	if err != nil {
 		return fmt.Errorf("-- Error creating context: %v", err)
 	}
@@ -40,19 +40,19 @@ func (pluginPubObj *pluginPublisher) createClient() error {
 	return nil
 }
 
-// Creates the eis message bus config from plugin config object
-func (pluginPubObj *pluginPublisher) initEisMsgBusConfigMap() error {
+// Creates the eii message bus config from plugin config object
+func (pluginPubObj *pluginPublisher) initEiiMsgBusConfigMap() error {
 
 	pubCtx, err := pluginPubObj.confMgr.GetPublisherByName(pluginPubObj.pluginConfigObj.instanceName)
 	if err != nil {
 		return fmt.Errorf("Failed to get the publisher: %v", err)
 	}
 
-	pluginPubObj.eisMsgBusConfigMap, err = pubCtx.GetMsgbusConfig()
+	pluginPubObj.eiiMsgBusConfigMap, err = pubCtx.GetMsgbusConfig()
 	if err != nil {
-		return fmt.Errorf("Error while getting eis message bus config: %v\n", err)
+		return fmt.Errorf("Error while getting eii message bus config: %v\n", err)
 	}
-	pluginPubObj.Log.Debugf("Plugin config is %v", pluginPubObj.eisMsgBusConfigMap)
+	pluginPubObj.Log.Debugf("Plugin config is %v", pluginPubObj.eiiMsgBusConfigMap)
 
 	return nil
 }
@@ -74,14 +74,14 @@ func (pluginPubObj *pluginPublisher) StopAllPublisher() {
 	}
 }
 
-// StopClient function will stop the eis messagebus client
+// StopClient function will stop the eii messagebus client
 func (pluginPubObj *pluginPublisher) StopClient() {
 	pluginPubObj.msgBusClient.Close()
 }
 
 // Publish data to message bus
 func (pluginPubObj *pluginPublisher) write(topic string, msgBusData pubData) error {
-	var pub *eismsgbus.Publisher
+	var pub *eiimsgbus.Publisher
 	var ok bool
 	if pluginPubObj.pluginConfigObj.profiling {
 		tsTemp := strconv.FormatInt((time.Now().UnixNano()/1e6), 10)
