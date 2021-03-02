@@ -45,7 +45,3 @@ type pluginPublisher struct {
 	confMgr            *eiicfgmgr.ConfigMgr             // Config manager reference
 }
 
-type pubData struct {
-	buf      []byte // blob data   
-	profInfo map[string]interface{} // profiling data
-}

@@ -80,12 +80,12 @@ func (pluginPubObj *pluginPublisher) StopClient() {
 }
 
 // Publish data to message bus
-func (pluginPubObj *pluginPublisher) write(topic string, msgBusData pubData) error {
+func (pluginPubObj *pluginPublisher) write(topic string, data map[string]interface{}) error {
 	var pub *eiimsgbus.Publisher
 	var ok bool
 	if pluginPubObj.pluginConfigObj.profiling {
 		tsTemp := strconv.FormatInt((time.Now().UnixNano()/1e6), 10)
-		msgBusData.profInfo["ts_telegraf_output_pub_exit"] = tsTemp
+		data["ts_telegraf_output_pub_exit"] = tsTemp
 	}
 	if pluginPubObj.pluginConfigObj.measurements[0] != "*" {
 		pub, ok = pluginPubObj.msgBusPubMap[topic]
@@ -98,16 +98,8 @@ func (pluginPubObj *pluginPublisher) write(topic string, msgBusData pubData) err
 	}
 
 	if ok {
-		if pluginPubObj.pluginConfigObj.profiling {
-			var msg []interface{}
-			msg = append(msg, msgBusData.buf, map[string]interface{}{"profileInfo": msgBusData.profInfo})
-			fmt.Printf("Published message: %v\n", msg)
-			pub.Publish(msg)
-		} else {
-			fmt.Printf("Published message: %v\n", msgBusData.buf)
-			pub.Publish(msgBusData.buf)
+			fmt.Printf("Published message: %v\n", data)
+			pub.Publish(data)
 		}
-
-	}
 	return nil
 }

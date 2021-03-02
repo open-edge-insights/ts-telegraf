@@ -24,13 +24,12 @@
         "Subscribers": [
             {
                 "Name": "default",
-		"PublisherAppName": "Telegraf",
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:60515",
                 "Topics": [
                     "*"
                 ],
-                "PublisherAppName": "EIIZmqBroker"
+                "PublisherAppName": "ZmqBroker"
             }
         ],
         "Publishers": [

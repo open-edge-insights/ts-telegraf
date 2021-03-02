@@ -42,9 +42,6 @@ type EiiMsgbus struct {
     serializer      serializers.Serializer
 }
 
-func (emb *EiiMsgbus) SetSerializer(serializer serializers.Serializer) {
-    emb.serializer = serializer
-}
 
 // Description : A short description for a plugin
 func (emb *EiiMsgbus) Description() string {
@@ -177,20 +174,19 @@ func (emb *EiiMsgbus) Close() error {
 // (Telegraf manages the buffer for you). Returning an error will fail this
 // batch of writes and the entire batch will be retried automatically.
 func (emb *EiiMsgbus) Write(metrics []telegraf.Metric) error {
-    var msgBusData pubData
-    var err error
-    msgBusData.profInfo = make(map[string]interface{})
     for _, metric := range metrics {
+        data := make(map[string]interface{})
         if emb.pluginConfigObj.profiling{
             tsTemp := strconv.FormatInt((time.Now().UnixNano()/1e6), 10)
-            msgBusData.profInfo["ts_telegraf_output_data_entry"] = tsTemp
+            data["ts_telegraf_output_data_entry"] = tsTemp
         }
         topic := metric.Name()
-        msgBusData.buf, err = emb.serializer.Serialize(metric)
-        if err != nil {
-            return err
+        fields := metric.Fields()
+        data["Name"] = topic
+        for key, val := range fields {
+            data[key] = val
         }
-        emb.pluginPubObj.write(topic, msgBusData)
+        emb.pluginPubObj.write(topic, data)
     }
     return nil
 }

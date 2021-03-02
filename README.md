@@ -11,7 +11,11 @@
 
 5. [Advanced: Multiple plugin sections of EII message bus input plugin](#Advanced:-Multiple-plugin-sections-of-EII-message-bus-input-plugin)
 
-6. [Optional: Adding multiple telegraf instances](#Optional:-Adding-multiple-telegraf-instances)
+6. [Enabling EII message bus Output plugin in Telegraf](#Enabling-EII-message-bus-output-plugin-in-Telegraf)
+
+7. [Advanced: Multiple plugin sections of EII message bus output plugin](#Advanced:-Multiple-plugin-sections-of-EII-message-bus-output-plugin)
+
+8. [Optional: Adding multiple telegraf instances](#Optional:-Adding-multiple-telegraf-instances)
 
 ## Telegraf in brief
 -------------------
@@ -126,7 +130,7 @@ Below is the sample configuration
                 "Topics": [
                     "*"
                 ],
-                "PublisherAppName": "EIIZmqBroker"
+                "PublisherAppName": "ZmqBroker"
             }
         ]
     }
@@ -239,7 +243,117 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
     data_format = "json"
     json_strict = true
     
+## Enabling EII message bus Output plugin in Telegraf
+
+**Purpose**
+Receiving the data from Telegraf Input Plugin and publish data to eii msgbus.
+
+**Configuration of the plugin**
+Configuration of the plugin is divided into two parts
+1. ETCD configuration
+2. Configuration in Telegraf.conf file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
+
+**ETCD configuration**
+Since this is eii message bus plugin and so it’s part of EII framework, message bus configuration and plugin’s topic specific configuration is kept into etcd.
+Below is the sample configuration
+
+```json
+{
+    "config": {
+        "publisher1": {
+            "measurements": ["*"],
+            "profiling": "false"
+        }
+    },
+    "interfaces": {
+        "Publishers": [
+            {
+                "Name": "publisher1",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65077",
+                "Topics": [
+                    "*"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            }
+        ]
+    }
+}
+```
+
+**Brief description of the configuration**.
+Like any other EII service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
+
+config :  Contains eii messagebus output plugin (**"publisher1"**). In the above sample configuration, the **"publisher1"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
+
+- measurements : This is an array of measurements configuration, where user specifies, which measurement data should be published in msgbus.
+- profiling : This is to enable profiling mode of this plugin (value can be either "true" or "false").
+
+
+**Configuration at Telegraf.conf file**
+
+The plugin instance name is an additional key, kept into plugin configuration section. This key is used to fetch the configuration from ETCD. Below is the minimmum, sample configuration with single plugin instance.
+
+    [[outputs.eii_msgbus]]
+    **instance_name = "publisher1"**
+
+
+Here, the value **'publisher1'**  acts as a key in the file **[config.json](./config.json)**. For this key, there is configuration in the **'interfaces' and 'config'** sections of the file **[config.json](./config.json)**. So the value of** 'instance_name'** acts as a connect/glue between the Telegraf configuration **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and the **ETCD configuration [config.json](./config.json)**
+
+## Advanced: Multiple plugin sections of EII message bus output plugin
+Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus output plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
+
+*The Telegraf's ETCD configuration for the same is*
+```json
+{
+    "config": {
+        "publisher1": {
+            "measurements": ["*"],
+            "profiling": "false"
+        },
+        "publisher2": {
+            "measurements": ["*"],
+            "profiling": "false"
+        }
+    },
+    "interfaces": {
+        "Publishers": [
+            {
+                "Name": "publisher1",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65077",
+                "Topics": [
+                    "*"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            },
+            {
+                "Name": "publisher2",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65078",
+                "Topics": [
+                    "*"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            }
+        ]
+    }
+}
+```
+*The Telegraf.conf configuration sections for the same is*
+
+    [[outputs.eii_msgbus]]
+    instance_name = "publisher1"
     
+    [[outputs.eii_msgbus]]
+    instance_name = "publisher2"
+
 ## Optional: Adding multiple telegraf instances
 - User can add multiple instances of Telegarf. For that user needs to add additional environment variable named 'ConfigInstance' in docker-compose.yml file. For  every additional telegraf instance, there has to be additional compose section in the docker-compose.yml file. 
 - The configuration for every instance has to be in the telegraf image. The standard to be followed is described as below. 
