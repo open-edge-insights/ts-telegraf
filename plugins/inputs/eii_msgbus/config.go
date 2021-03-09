@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
 	json "encoding/json"
@@ -31,7 +31,7 @@ import (
 )
 
 // Retuns the config object for a given topic
-func (pluginConfigObj *eisMsgbusInputPluginConfig) getPrefixConfigForTopic(tpName string) *topicPrefixConfig {
+func (pluginConfigObj *eiiMsgbusInputPluginConfig) getPrefixConfigForTopic(tpName string) *topicPrefixConfig {
 
 	pxfLen := 0
 	var config *topicPrefixConfig = nil
@@ -49,7 +49,7 @@ func (pluginConfigObj *eisMsgbusInputPluginConfig) getPrefixConfigForTopic(tpNam
 	return config
 }
 
-func (pluginConfigObj *eisMsgbusInputPluginConfig) getDefaultPrefix(tpName string) (*topicPrefixConfig, error) {
+func (pluginConfigObj *eiiMsgbusInputPluginConfig) getDefaultPrefix(tpName string) (*topicPrefixConfig, error) {
 
 	tempArray := []string{"", ""}
 	tempArray[0] = tpName
@@ -64,7 +64,7 @@ func (pluginConfigObj *eisMsgbusInputPluginConfig) getDefaultPrefix(tpName strin
 }
 
 // Converts the plugin configuration into plugin configuration object of type pluginConfigObj.
-func (pluginConfigObj *eisMsgbusInputPluginConfig) initConfig(emb *EisMsgbus) error {
+func (pluginConfigObj *eiiMsgbusInputPluginConfig) initConfig(emb *EiiMsgbus) error {
 
 	appConfig, err := emb.confMgr.GetAppConfig()
 	if err != nil {
@@ -121,9 +121,9 @@ func (pluginConfigObj *eisMsgbusInputPluginConfig) initConfig(emb *EisMsgbus) er
 func getTopicPrefixConfig(tempArray []string) *topicPrefixConfig {
 
 	// The topic prefix configuration can be in three different forms
-	// Option 1. ${eis-msg-topic-prefix}:${measurement-name}:${queue_len}:${num_of_workers_in_pool}
-	// Option 2. ${eis-msg-topic-name}:${measurement-name}::
-	// Option 3. ${eis-msg-topic-name}:${measurement-name}
+	// Option 1. ${eii-msg-topic-prefix}:${measurement-name}:${queue_len}:${num_of_workers_in_pool}
+	// Option 2. ${eii-msg-topic-name}:${measurement-name}::
+	// Option 3. ${eii-msg-topic-name}:${measurement-name}
 	// All three parsing scenarios has been addressed in this function.
 	if len(tempArray) < 2 || len(tempArray) > 4 {
 		return nil

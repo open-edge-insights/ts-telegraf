@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
 	"fmt"
@@ -48,7 +48,7 @@ func (tmMaket *testMetricMaker) Log() telegraf.Logger {
 	return tmMaket.logger
 }
 
-func NewTestEisMsgbus() *EisMsgbus {
+func NewTestEiiMsgbus() *EiiMsgbus {
 	parserConfig := jsonParser.Config{
 		MetricName: "sample1",
 		Strict:     true,
@@ -61,7 +61,7 @@ func NewTestEisMsgbus() *EisMsgbus {
 	var tmMake agent.MetricMaker
 	tmMake = &testMetricMaker{logger: testutil.Logger{}}
 	//acc := agent.NewAccumulator(tmMake, make(telegraf.Metric))
-	temp := EisMsgbus{
+	temp := EiiMsgbus{
 		Log:           testutil.Logger{},
 		Instance_name: "publisher1",
 		parser:        parser,
@@ -74,25 +74,25 @@ func NewTestEisMsgbus() *EisMsgbus {
 // Test Plugins start and stop
 func TestStart(t *testing.T) {
 	fmt.Printf("\n===========In TestStart=========\n")
-	eisMsgBus := NewTestEisMsgbus()
+	eiiMsgBus := NewTestEiiMsgbus()
 	var acc telegraf.Accumulator
-	err := eisMsgBus.Start(acc)
+	err := eiiMsgBus.Start(acc)
 	assert.NoError(t, err)
-	eisMsgBus.Stop()
+	eiiMsgBus.Stop()
 }
 
 // Test Gather
 func TestGather(t *testing.T) {
 	fmt.Printf("\n===========In TestGather=========\n")
-	eisMsgBus := NewTestEisMsgbus()
-	err := eisMsgBus.Gather(nil)
+	eiiMsgBus := NewTestEiiMsgbus()
+	err := eiiMsgBus.Gather(nil)
 	assert.NoError(t, err)
 }
 
 // Test SampleConfig
 func TestSampleConfig(t *testing.T) {
 	fmt.Printf("\n===========In SampleConfig=========\n")
-	eisMsgBus := NewTestEisMsgbus()
-	config := eisMsgBus.SampleConfig()
+	eiiMsgBus := NewTestEiiMsgbus()
+	config := eiiMsgBus.SampleConfig()
 	assert.NotEmpty(t, config)
 }

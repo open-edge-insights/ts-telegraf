@@ -20,10 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eismsgbustype "EISMessageBus/pkg/types"
+	eiimsgbustype "EIIMessageBus/pkg/types"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -51,46 +51,46 @@ func getTestJsonData() map[string]interface{} {
 }
 
 // This function publishes the message to subscriber checks whether the plugin has processed it ot not
-func testSubscriber(t *testing.T, eisMsgBus *EisMsgbus, jsonMsg map[string]interface{}, testCaseName string) {
-	err := eisMsgBus.Start(eisMsgBus.ac)
+func testSubscriber(t *testing.T, eiiMsgBus *EiiMsgbus, jsonMsg map[string]interface{}, testCaseName string) {
+	err := eiiMsgBus.Start(eiiMsgBus.ac)
 	assert.NoError(t, err)
 
 	buffer, err := json.Marshal(jsonMsg)
 	buffer = buffer
 	assert.NoError(t, err)
 
-	for key, _ := range eisMsgBus.pluginConfigObj.mapOfPrefixToConfig {
-		msg := eismsgbustype.NewMsgEnvelope(nil, buffer)
+	for key, _ := range eiiMsgBus.pluginConfigObj.mapOfPrefixToConfig {
+		msg := eiimsgbustype.NewMsgEnvelope(nil, buffer)
 		msg.Name = key
-		for _, sub := range eisMsgBus.pluginSubObj.msgBusSubMap {
+		for _, sub := range eiiMsgBus.pluginSubObj.msgBusSubMap {
 			sub.MessageChannel <- msg
 		}
 	}
 
 	time.Sleep(10000 * time.Millisecond)
 
-	for _, sub := range eisMsgBus.pluginSubObj.msgBusSubMap {
+	for _, sub := range eiiMsgBus.pluginSubObj.msgBusSubMap {
 		numElm := len(sub.MessageChannel)
 		assert := assert.New(t)
 		message := testCaseName + " failed"
 		assert.Equal(numElm, 0, message)
 	}
 
-	go eisMsgBus.Stop()
+	go eiiMsgBus.Stop()
 }
 
 // Test With Smaple publisher
 func TestSubscriber(t *testing.T) {
 	fmt.Printf("\n===========In TestSubscriber=========\n")
-	eisMsgBus := NewTestEisMsgbus()
+	eiiMsgBus := NewTestEiiMsgbus()
 	jsonMsg := getTestJsonData()
-	testSubscriber(t, eisMsgBus, jsonMsg, "TestSubscriber")
+	testSubscriber(t, eiiMsgBus, jsonMsg, "TestSubscriber")
 }
 
 func TestSubscriberWithProfiler(t *testing.T) {
 	fmt.Printf("\n===========In TestSubscriberWithProfiler=========\n")
-	eisMsgBus := NewTestEisMsgbus()
-	eisMsgBus.pluginConfigObj.profiling = true
+	eiiMsgBus := NewTestEiiMsgbus()
+	eiiMsgBus.pluginConfigObj.profiling = true
 	jsonMsg := getTestJsonData()
-	testSubscriber(t, eisMsgBus, jsonMsg, "TestSubscriberWithProfiler")
+	testSubscriber(t, eiiMsgBus, jsonMsg, "TestSubscriberWithProfiler")
 }
