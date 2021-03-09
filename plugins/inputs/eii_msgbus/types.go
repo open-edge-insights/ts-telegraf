@@ -20,12 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eiscfgmgr "ConfigMgr/eisconfigmgr"
-	eismsgbus "EISMessageBus/eismsgbus"
-	types "EISMessageBus/pkg/types"
+	eiicfgmgr "ConfigMgr/eiiconfigmgr"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
+	types "EIIMessageBus/pkg/types"
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/parsers"
 	"sync"
@@ -39,8 +39,8 @@ type topicPrefixConfig struct {
 	isSyncProc bool
 }
 
-type eisMsgbusInputPluginConfig struct {
-	instanceName        string //eis messagebus plugin instance name
+type eiiMsgbusInputPluginConfig struct {
+	instanceName        string //eii messagebus plugin instance name
 	mapOfPrefixToConfig map[string]*topicPrefixConfig
 	globalQueueLen      int  //Length of global queue
 	globalPoolSize      int  // size of global threadpool
@@ -49,7 +49,7 @@ type eisMsgbusInputPluginConfig struct {
 }
 
 type dataFromMsgBus struct {
-	msg      *types.MsgEnvelope     // Topic data from eis messagebus
+	msg      *types.MsgEnvelope     // Topic data from eii messagebus
 	profInfo map[string]interface{} // profiling data for a point
 }
 
@@ -79,15 +79,15 @@ type pluginRuntimeData struct {
 }
 
 type pluginSubscriber struct {
-	msgBusClient       *eismsgbus.MsgbusClient          // eis messsagebus client
-	msgBusSubMap       map[string]*eismsgbus.Subscriber // eis messagebus subscriber handels for topic prefix
+	msgBusClient       *eiimsgbus.MsgbusClient          // eii messsagebus client
+	msgBusSubMap       map[string]*eiimsgbus.Subscriber // eii messagebus subscriber handels for topic prefix
 	subTopics          []string                         // sub topics from etcd interface
-	pluginConfigObj    *eisMsgbusInputPluginConfig      // ref to plugin config onject
+	pluginConfigObj    *eiiMsgbusInputPluginConfig      // ref to plugin config onject
 	pluginRtData       *pluginRuntimeData               // ref to plugin runtime data
-	eisMsgBusConfigMap map[string]interface{}           // eis messagbus config
+	eiiMsgBusConfigMap map[string]interface{}           // eii messagbus config
 	Log                telegraf.Logger                  // telegraf logger object
 	wg                 sync.WaitGroup                   // to waid for all subscribers to gracefully exit
-	confMgr            *eiscfgmgr.ConfigMgr             // Config manager reference
+	confMgr            *eiicfgmgr.ConfigMgr             // Config manager reference
 }
 
 // The wraper for Telegraf engine components
@@ -96,11 +96,11 @@ type telegrafAccWriter struct {
 }
 
 // An interface for any processor
-type eisMsgProcessor interface {
+type eiiMsgProcessor interface {
 	processData(rtInfo *tpRuntimeData, data dataFromMsgBus) error
 }
 
-// this type implements interface eisMsgProcessor
+// this type implements interface eiiMsgProcessor
 // It does two things
 // 1.json parsing and convert the json into a metrics
 // 2.Writes metrics to telegraf accumelator
@@ -108,7 +108,7 @@ type simpleMsgProcessor struct {
 }
 
 type threadPool struct {
-	processor    eisMsgProcessor // processor object
+	processor    eiiMsgProcessor // processor object
 	tpRtInfo     *tpRuntimeData  // topic specifcc runtinme data
 	poolSize     int             // number of threads in a pool
 	Log          telegraf.Logger // telegraf logger object

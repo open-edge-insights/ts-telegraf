@@ -1,6 +1,6 @@
 {
     "type": "zmq_ipc",
-    "socket_dir": "/EIS/sockets/",
+    "socket_dir": "/EII/sockets/",
     "topic-pfx1": {
         "socket_file": "all_topics_data"
     },

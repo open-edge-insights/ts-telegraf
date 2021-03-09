@@ -20,10 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eismsgbustype "EISMessageBus/pkg/types"
+	eiimsgbustype "EIIMessageBus/pkg/types"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -39,11 +39,11 @@ func NewTopicRuntimeData() *tpRuntimeData {
 
 func TestSimpleMsgProcessor(t *testing.T) {
 	fmt.Printf("\n===========In SimpleMsgProcessor=========\n")
-	eisMsgBus := NewTestEisMsgbus()
+	eiiMsgBus := NewTestEiiMsgbus()
 	var processor simpleMsgProcessor
 	topicRtData := NewTopicRuntimeData()
-	topicRtData.parser = eisMsgBus.parser
-	topicRtData.writer = telegrafAccWriter{ac: eisMsgBus.ac}
+	topicRtData.parser = eiiMsgBus.parser
+	topicRtData.writer = telegrafAccWriter{ac: eiiMsgBus.ac}
 	jsonMsg := map[string]interface{}{
 		"str":   "hello",
 		"intr":  2.0,
@@ -61,7 +61,7 @@ func TestSimpleMsgProcessor(t *testing.T) {
 
 	buffer, err := json.Marshal(jsonMsg)
 
-	msg := eismsgbustype.NewMsgEnvelope(nil, buffer)
+	msg := eiimsgbustype.NewMsgEnvelope(nil, buffer)
 	msg.Name = "topic-name"
 	err = processor.processData(topicRtData, dataFromMsgBus{msg: msg, profInfo: nil})
 	assert.NoError(t, err)

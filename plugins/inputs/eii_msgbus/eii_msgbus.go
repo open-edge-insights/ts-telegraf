@@ -20,29 +20,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package eis_msgbus
+package eii_msgbus
 
 import (
-	eiscfgmgr "ConfigMgr/eisconfigmgr"
+	eiicfgmgr "ConfigMgr/eiiconfigmgr"
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/inputs"
 	"github.com/influxdata/telegraf/plugins/parsers"
 	"sync"
 )
 
-// EisMsgbus : plugin object
-type EisMsgbus struct {
+// EiiMsgbus : plugin object
+type EiiMsgbus struct {
 	Instance_name   string `toml:"instance_name"`
-	pluginConfigObj eisMsgbusInputPluginConfig
+	pluginConfigObj eiiMsgbusInputPluginConfig
 	pluginRtData    pluginRuntimeData
 	parser          parsers.Parser
 	pluginSubObj    pluginSubscriber
 	ac              telegraf.Accumulator
 	Log             telegraf.Logger
-	confMgr         *eiscfgmgr.ConfigMgr
+	confMgr         *eiicfgmgr.ConfigMgr
 }
 
-func (emb *EisMsgbus) initPluginRtData() {
+func (emb *EiiMsgbus) initPluginRtData() {
 	emb.pluginRtData.tpRtData = make(map[string]*tpRuntimeData)
 	emb.pluginRtData.dataChannelsOfAllTps = make(map[string]chan dataFromMsgBus)
 	emb.pluginRtData.mapOfThreadPools = make(map[string]*threadPool)
@@ -53,8 +53,8 @@ func (emb *EisMsgbus) initPluginRtData() {
 }
 
 // Description : A short description for a plugin
-func (emb *EisMsgbus) Description() string {
-	return "Subscriber for EIS topics"
+func (emb *EiiMsgbus) Description() string {
+	return "Subscriber for EII topics"
 }
 
 const sampleConfig = `
@@ -105,18 +105,18 @@ const sampleConfig = `
 #      }
 #
 ##The format to mention the topic are
-# Option 1. ${eis-msg-topic-prefix}:${measurement-name}:${queue_len}:${num_of_workers_in_pool}
+# Option 1. ${eii-msg-topic-prefix}:${measurement-name}:${queue_len}:${num_of_workers_in_pool}
 # Dedicate queue and pool of workers for a topic
 # Asynchronously processing the messages
 #
 #
-# Option 2. ${eis-msg-topic-name}:${measurement-name}::
+# Option 2. ${eii-msg-topic-name}:${measurement-name}::
 # No deicated queue+worker-pool for a topic.
 # All the messages will go to global queue and global pool of workers will process it
 # Asynchronously processing the messages
 #
 #
-# Option 3. ${eis-msg-topic-name}:${measurement-name}
+# Option 3. ${eii-msg-topic-name}:${measurement-name}
 # No queue + no workers =>  receive + json-processing
 # MQTT input plugin does this way
 # Synchronously processing the messages
@@ -168,18 +168,18 @@ json_name_key = ""
 `
 
 // SampleConfig : Will be called by telegraf engine
-func (emb *EisMsgbus) SampleConfig() string {
+func (emb *EiiMsgbus) SampleConfig() string {
 	return sampleConfig
 }
 
 // Gather : Will be called by telegraf engine
-func (emb *EisMsgbus) Gather(acc telegraf.Accumulator) error {
+func (emb *EiiMsgbus) Gather(acc telegraf.Accumulator) error {
 	return nil
 }
 
 // Start : Will be called by telegraf engine and starts the plugin as service
-func (emb *EisMsgbus) Start(ac telegraf.Accumulator) error {
-	confMgr, err := eiscfgmgr.ConfigManager()
+func (emb *EiiMsgbus) Start(ac telegraf.Accumulator) error {
+	confMgr, err := eiicfgmgr.ConfigManager()
 	if err != nil {
 		emb.Log.Errorf(err.Error())
 		return err
@@ -200,7 +200,7 @@ func (emb *EisMsgbus) Start(ac telegraf.Accumulator) error {
 		// Return nil to make sure Telegraf does not restart
 		return nil
 	}
-	if err := emb.initEisBus(); err != nil {
+	if err := emb.initEiiBus(); err != nil {
 		emb.Log.Errorf(err.Error())
 		emb.pluginSubObj.pluginRtData = nil
 		// Return nil to make sure Telegraf does not restart
@@ -210,12 +210,12 @@ func (emb *EisMsgbus) Start(ac telegraf.Accumulator) error {
 }
 
 // SetParser : Will be called by telegraf engine and it sets the parser
-func (emb *EisMsgbus) SetParser(parser parsers.Parser) {
+func (emb *EiiMsgbus) SetParser(parser parsers.Parser) {
 	emb.parser = parser
 }
 
 // Stop : Will be called by telegraf engine and it stops all threads in plugin
-func (emb *EisMsgbus) Stop() {
+func (emb *EiiMsgbus) Stop() {
 
 	if emb.pluginSubObj.pluginRtData == nil {
 		return
@@ -240,9 +240,9 @@ func (emb *EisMsgbus) Stop() {
 // 1.Creates the messagebus config and messagebus client and
 //   subscrtiber handles for each configured prefix.
 // 2.All subscribers goes into receive loop
-func (emb *EisMsgbus) initEisBus() error {
+func (emb *EiiMsgbus) initEiiBus() error {
 	// Create messagebus config
-	if err := emb.pluginSubObj.initEisMsgBusConfigMap(); err != nil {
+	if err := emb.pluginSubObj.initEiiMsgBusConfigMap(); err != nil {
 		return err
 	}
 
@@ -264,8 +264,8 @@ func (emb *EisMsgbus) initEisBus() error {
 	return nil
 }
 
-// Convert the pkugin configuration into eisMsgbusInputPluginConfig object
-func (emb *EisMsgbus) readConfig() error {
+// Convert the pkugin configuration into eiiMsgbusInputPluginConfig object
+func (emb *EiiMsgbus) readConfig() error {
 	if err := emb.pluginConfigObj.initConfig(emb); err != nil {
 		return err
 	}
@@ -274,7 +274,7 @@ func (emb *EisMsgbus) readConfig() error {
 }
 
 func init() {
-	inputs.Add("eis_msgbus", func() telegraf.Input {
-		return &EisMsgbus{}
+	inputs.Add("eii_msgbus", func() telegraf.Input {
+		return &EiiMsgbus{}
 	})
 }
