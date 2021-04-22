@@ -31,6 +31,8 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
 
 
 ## MQTT sample configuration and tool to test it.
+* To test with MQTT publisher, Please update 'MQTT_BROKER_HOST' Environment Variables in [build/.env](../../build/.env) with HOST IP address of the system where MQTT Broker is running.
+
 * Telegraf Instance can be configured with pressure point data ingestion. In the following example, the MQTT input plugin of Telegraf is configured to read pressure point data and stores into ‘point_pressure_data’ measurement.
 
 	```
@@ -126,7 +128,7 @@ Below is the sample configuration
             {
                 "Name": "default",
 				"Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:60515",
+                "EndPoint": "ia_zmq_broker:60515",
                 "Topics": [
                     "*"
                 ],
@@ -209,7 +211,7 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
       "Subscribers":[
          {
             "Name":"publisher1",
-            "EndPoint":"127.0.0.1:5569",
+            "EndPoint":"EII_APP1_container_name:5569",
             "Topics":[
                "*"
             ],
@@ -218,7 +220,7 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
          },
          {
             "Name":"publisher2",
-            "EndPoint":"127.0.0.1:5570",
+            "EndPoint":"EII_APP2_container_name:5570",
             "Topics":[
                "topic-pfx21",
                "topic-pfx22",
@@ -270,7 +272,7 @@ Below is the sample configuration
             {
                 "Name": "publisher1",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65077",
+                "EndPoint": "0.0.0.0:65077",
                 "Topics": [
                     "*"
                 ],
@@ -323,7 +325,7 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
             {
                 "Name": "publisher1",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65077",
+                "EndPoint": "0.0.0.0:65077",
                 "Topics": [
                     "*"
                 ],
@@ -334,7 +336,7 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
             {
                 "Name": "publisher2",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65078",
+                "EndPoint": "0.0.0.0:65078",
                 "Topics": [
                     "*"
                 ],
@@ -389,7 +391,6 @@ For $ConfigInstance = 'Telegraf1'
 	        TELEGRAF_GO_VERSION: ${TELEGRAF_GO_VERSION}
 	    container_name: ia_telegraf1
 	    hostname: ia_telegraf1
-	    network_mode: host
 	    image: ${DOCKER_REGISTRY}ia_telegraf:${EII_VERSION}
 	    restart: unless-stopped
 	    ipc: "none"
@@ -399,14 +400,16 @@ For $ConfigInstance = 'Telegraf1'
 	      ConfigInstance: "Telegraf1"
 	      CertType: "pem,zmq"
 	      DEV_MODE: ${DEV_MODE}
-	      no_proxy: ${eii_no_proxy},${ETCD_HOST}
-	      NO_PROXY: ${eii_no_proxy},${ETCD_HOST}
+	      no_proxy: "${ETCD_HOST},ia_influxdbconnector"
+	      NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
 	      ETCD_HOST: ${ETCD_HOST}
-	      MQTT_BROKER_HOST: '127.0.0.1'
-	      INFLUX_SERVER: '127.0.0.1'
+	      MQTT_BROKER_HOST: $MQTT_BROKER_HOST
+	      INFLUX_SERVER: 'ia_influxdbconnector'
 	      INFLUXDB_PORT: $INFLUXDB_PORT
 	      ETCD_PREFIX: ${ETCD_PREFIX}
 	    user: ${EII_UID}
+            networks:
+              - eii
 	    volumes:
 	      - "vol_temp_telegraf:/tmp/"
 	      - "vol_eii_socket:${SOCKET_DIR}"

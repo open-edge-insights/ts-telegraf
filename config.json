@@ -25,7 +25,7 @@
             {
                 "Name": "default",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:60515",
+                "EndPoint": "ia_zmq_broker:60515",
                 "Topics": [
                     "*"
                 ],
@@ -36,7 +36,7 @@
             {
                 "Name": "publisher1",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65077",
+                "EndPoint": "0.0.0.0:65077",
                 "Topics": [
                     "*"
                 ],
