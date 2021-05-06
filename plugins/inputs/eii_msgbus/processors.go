@@ -37,7 +37,7 @@ func doJSONParsing(parser parsers.Parser, data dataFromMsgBus) (*[]telegraf.Metr
 		t1 = time.Now().UnixNano()
 	}
 
-	metrics, err := parser.Parse(data.msg.Blob)
+	metrics, err := parser.Parse(data.msg.Blob[0])
 
 	if data.profInfo != nil {
 		data.profInfo["total_time_spent_in_json_parser"] = time.Now().UnixNano() - t1
