@@ -31,7 +31,6 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
 
 
 ## MQTT sample configuration and tool to test it.
-* To test with MQTT publisher, Please update 'MQTT_BROKER_HOST' Environment Variables in [build/.env](../../build/.env) with HOST IP address of the system where MQTT Broker is running.
 
 * Telegraf Instance can be configured with pressure point data ingestion. In the following example, the MQTT input plugin of Telegraf is configured to read pressure point data and stores into ‘point_pressure_data’ measurement.
 
