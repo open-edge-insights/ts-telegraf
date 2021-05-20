@@ -106,14 +106,9 @@ COPY --from=builder /etc/Telegraf/ /etc/Telegraf/
 COPY --from=builder $ARTIFACTS/telegraf .
 COPY --from=builder $ARTIFACTS/bin/telegraf .local/bin/
 
-# Setting python dev env
+# Setting python env
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends python3-distutils && \
-    rm -rf /var/lib/apt/lists/*
-
+    apt-get install -y --no-install-recommends python3-distutils python3-minimal
 
 ARG EII_UID
 ARG EII_USER_NAME
