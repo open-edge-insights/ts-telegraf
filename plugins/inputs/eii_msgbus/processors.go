@@ -27,6 +27,7 @@ import (
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/parsers"
 	"time"
+	"encoding/json"
 )
 
 // Does JSON parsing using telegraf JSON parser
@@ -37,7 +38,11 @@ func doJSONParsing(parser parsers.Parser, data dataFromMsgBus) (*[]telegraf.Metr
 		t1 = time.Now().UnixNano()
 	}
 
-	metrics, err := parser.Parse(data.msg.Blob[0])
+	buffer, err := json.Marshal(data.msg.Data)
+	if err != nil {
+		return nil, fmt.Errorf("Error in coverting data to byte array:%v", err)
+	}
+	metrics, err := parser.Parse(buffer)
 
 	if data.profInfo != nil {
 		data.profInfo["total_time_spent_in_json_parser"] = time.Now().UnixNano() - t1
