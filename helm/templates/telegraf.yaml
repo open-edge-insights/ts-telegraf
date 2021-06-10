@@ -55,8 +55,10 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
+        {{- if eq .Values.config.telegraf.IPC true}}
         - name: {{ .Values.volumes.eii_socket.name }}
           mountPath: {{ .Values.volumes.eii_socket.location }}
+        {{- end }}
         {{ if eq .Values.env.DEV_MODE false}}
         - name: etcd-certs
           mountPath: /run/secrets/etcd/
@@ -79,6 +81,7 @@ spec:
           value: "influxdbconnector"
         - name: INFLUXDB_PORT
           value: "8086"
+        {{- if eq .Values.config.telegraf.IPC false}}
         - name: PUBLISHER_publisher1_TYPE
           value: "zmq_tcp"
         - name: PUBLISHER_publisher1_ENDPOINT
@@ -88,6 +91,16 @@ spec:
           value: "{{ .Values.config.zmqbroker.name }}:{{ .Values.config.zmqbroker.broker_pub_port }}"
         - name: SUBSCRIBER_TYPE
           value: "zmq_tcp"
+        {{- end }}
+        {{- else }}
+        - name: PUBLISHER_publisher1_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_publisher1_ENDPOINT
+          value: "/EII/sockets,telegraf-out"
+        - name: SUBSCRIBER_ENDPOINT
+          value: "/EII/sockets,backend-socket"
+        - name: SUBSCRIBER_TYPE
+          value: "zmq_ipc"
         {{- end }}
         {{ if eq .Values.env.DEV_MODE false}}
         - name: CONFIGMGR_CACERT
@@ -99,9 +112,11 @@ spec:
         {{ end }}
 
       volumes:
+      {{- if eq .Values.config.telegraf.IPC true}}
       - name: {{ .Values.volumes.eii_socket.name }}
         persistentVolumeClaim:
           claimName: {{ .Values.volumes.eii_socket.name }}
+      {{- end }}
       {{ if eq .Values.env.DEV_MODE false}}
       - name: etcd-certs
         secret:
