@@ -21,12 +21,11 @@
 # Dockerfile for Telegraf
 
 ARG EII_VERSION
-ARG DOCKER_REGISTRY
 ARG UBUNTU_IMAGE_VERSION
 
 ARG ARTIFACTS="/artifacts"
-FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
-FROM ${DOCKER_REGISTRY}ia_eiibase:${EII_VERSION} as base
+FROM ia_common:$EII_VERSION as common
+FROM ia_eiibase:${EII_VERSION} as base
 
 FROM base as builder
 LABEL description="Telegraf image"

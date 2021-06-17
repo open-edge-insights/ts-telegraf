@@ -32,14 +32,13 @@ services:
         EII_VERSION: ${EII_VERSION}
         EII_UID: ${EII_UID}
         EII_USER_NAME: ${EII_USER_NAME}
-        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
         TELEGRAF_SOURCE_TAG: ${TELEGRAF_SOURCE_TAG}
         TELEGRAF_GO_VERSION: ${TELEGRAF_GO_VERSION}
         UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
     container_name: ia_telegraf
     hostname: ia_telegraf
-    image: ${DOCKER_REGISTRY}ia_telegraf:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_telegraf:${EII_VERSION}
     restart: unless-stopped
     ipc: "none"
     security_opt:
