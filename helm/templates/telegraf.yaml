@@ -48,6 +48,10 @@ spec:
       labels:
         app: telegraf
     spec:
+      {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
+      imagePullSecrets:
+      - name: registryauth
+      {{- end }}
       containers:
       - name: ia-telegraf
         image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_telegraf:{{ .Values.EII_VERSION }}
