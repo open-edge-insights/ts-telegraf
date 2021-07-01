@@ -357,6 +357,45 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
     [[outputs.eii_msgbus]]
     instance_name = "publisher2"
 
+## Run Telegraf Input output plugin in IPC mode
+- User needs to modify interfaces section of **[config.json](./config.json)** to run in IPC mode as following:
+
+```
+    "interfaces": {
+        "Subscribers": [
+            {
+                "Name": "default",
+                "Type": "zmq_ipc",
+                "EndPoint": {
+                  "SocketDir": "/EII/sockets",
+                  "SocketFile": "backend-socket"
+                },
+
+                "Topics": [
+                    "*"
+                ],
+                "PublisherAppName": "ZmqBroker"
+            }
+        ],
+        "Publishers": [
+            {
+                "Name": "publisher1",
+                "Type": "zmq_ipc",
+                "EndPoint": {
+                  "SocketDir": "/EII/sockets",
+                  "SocketFile": "telegraf-out"
+                },
+                "Topics": [
+                    "*"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            }
+        ]
+    }
+
+```
 ## Optional: Adding multiple telegraf instances
 - User can add multiple instances of Telegarf. For that user needs to add additional environment variable named 'ConfigInstance' in docker-compose.yml file. For  every additional telegraf instance, there has to be additional compose section in the docker-compose.yml file. 
 - The configuration for every instance has to be in the telegraf image. The standard to be followed is described as below. 
