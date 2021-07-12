@@ -34,6 +34,15 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
 
 * To test with MQTT publisher in k8s helm environment, Please update 'MQTT_BROKER_HOST' Environment Variables in [values.yaml](./helm/values.yaml) with HOST IP address of the system where MQTT Broker is running.
 
+* To test with remote mqtt broker in docker environment, Please update 'MQTT_BROKER_HOST' Environment Variables in [docker-compose.yml](docker-compose.yml) with HOST IP address of the system where MQTT Broker is running.
+
+```
+  ia_telegraf:
+    environment:
+      ...
+      MQTT_BROKER_HOST: '<HOST IP address of the system where MQTT Broker is running>'
+```
+
 * Telegraf Instance can be configured with pressure point data ingestion. In the following example, the MQTT input plugin of Telegraf is configured to read pressure point data and stores into ‘point_pressure_data’ measurement.
 
 	```
@@ -69,11 +78,18 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
 	```
 
 * To start the mqtt-publisher with pressure data,
-	```sh
-	$ cd ../tools/mqtt-publisher/
-	$ ./build.sh && ./publisher.sh --name publisher_pressure --pressure 10:30
-	```
-please refer [tools/mqtt-publisher/README.md](../tools/mqtt-publisher/README.md)
+   ```sh
+   $ cd ../tools/mqtt/publisher/
+   ```
+   change the command option in [docker-compose.yml](../tools/mqtt/publisher/docker-compose.yml) to:
+   ```sh
+   ["--pressure", "10:30"]
+   ```
+   Build and Run mqtt publisher:
+   ```sh
+   $ docker-compose up --build -d
+   ```
+please refer [tools/mqtt/README.md](../tools/mqtt/README.md)
 
 ## Enabling EII message bus input plugin in Telegraf
 
