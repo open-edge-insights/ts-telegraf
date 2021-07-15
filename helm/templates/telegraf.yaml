@@ -25,7 +25,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   ports:
-  - port: {{ .Values.config.telegraf.publisher_port }}
+  - port: {{ .Values.config.telegraf.publish_port }}
     name: tcp
   selector:
     app: telegraf
@@ -89,7 +89,7 @@ spec:
         - name: PUBLISHER_publisher1_TYPE
           value: "zmq_tcp"
         - name: PUBLISHER_publisher1_ENDPOINT
-          value: "0.0.0.0:{{ .Values.config.telegraf.publisher_port }}"
+          value: "0.0.0.0:{{ .Values.config.telegraf.publish_port }}"
         {{- if .Values.config.zmqbroker }}
         - name: SUBSCRIBER_ENDPOINT
           value: "{{ .Values.config.zmqbroker.name }}:{{ .Values.config.zmqbroker.broker_pub_port }}"
