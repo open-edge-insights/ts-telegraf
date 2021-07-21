@@ -93,8 +93,8 @@ please refer [tools/mqtt/README.md](../tools/mqtt/README.md)
 
 ## Enabling EII message bus input plugin in Telegraf
 
-**Purpose**
-Receiving the data from EII message bus and storing it into influx db, at scale.
+The purpose of this enablement is to allow telegraf received data from EII message bus and storing it into influxdb that able to be scalable. 
+
 
 **Overview**
 
@@ -102,8 +102,8 @@ The plugin subscribes to configured topic / topic prefixes. Plugin has component
 called subscriber which receives the data from eii message bus.
 After receiving the data, depending on configuration, the plugin process
 the data, either synchronously or asynchronously. 
-- In synchronous processing, the receiver thread (thread which receives the data from EII message bus) is also resposible for the processing of the data (json parsing). After processing the previous data only, the receiver thread process next data available on the EII message bus. 
-- In asynchronous processing the  receiver thread  receives the data and put it into the queue. There will be pool of threads which will be dequeing the data from the queue and processing it.
+- In **synchronous** processing**, the receiver thread (thread which receives the data from EII message bus) is also resposible for the processing of the data (json parsing). After processing the previous data only, the receiver thread process next data available on the EII message bus. 
+- In **asynchronous** processing the  receiver thread  receives the data and put it into the queue. There will be pool of threads which will be dequeing the data from the queue and processing it.
 
 **Guidelines for choosing the data processing options are**
 - Synchronous option: When the ingestion rate is consistent
@@ -112,11 +112,13 @@ the data, either synchronously or asynchronously.
 2.  Global queue+threadpool : Sometimes spike in ingestion rate for a specific topic
 
 **Configuration of the plugin**
+
 Configuration of the plugin is divided into two parts
 1. ETCD configuration
 2. Configuration in Telegraf.conf file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 **ETCD configuration**
+
 Since this is eii message bus plugin and so it's part of EII framework,
 message bus configuration and plugin's topic specific configuration is kept into etcd.
 Below is the sample configuration
@@ -156,6 +158,7 @@ Below is the sample configuration
 }
 ```
 **Brief description of the configuration**.
+
 Like any other EII service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
 
 config :  Contains the configuration of the influxdb (**"influxdb"**) and  eii messagebus input plugin (**"default"**). In the above sample configuration, the **"default"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
@@ -432,7 +435,8 @@ For $ConfigInstance = 'Telegraf1'
 - The location of the Telegraf configuration would be
 [config](./config)/Telegraf1/Telegraf1.conf (for production mode) and [config](./config)/Telegraf1/Telegraf1_devmode.conf (for developer mode)
 - The additional docker compose section which has to be manually added in the file 'docker-compose.yml' would be
-	```
+	
+    ```
 	  ia_telegraf1:
 	    depends_on:
 	      - ia_common
@@ -474,6 +478,23 @@ For $ConfigInstance = 'Telegraf1'
 	      - etcd_Telegraf_cert
 	      - etcd_Telegraf_key
 	```
+- After that, user will need to run the **builder.py** script command to allow the changes of the dockerfile take place.
+
+    ```    
+    $ cd [WORK_DIR]/IEdgeInsights/build
+    $ python3 -f builder.py
+    ```
+
+- User will need to provision, build and bring up all the container again by using below command.
+
+    ```
+    $ cd [WORK_DIR]/IEdgeInsights/build/provision
+    $ sudo ./provision.sh ../docker-compose.yml
+    $ cd ../
+    $ docker compose up build -d
+    ```
+
+- Based on above example, user can check the telegraf service will have multiple  container as by using docker ps command.
 
 **Note**: It's been practice followed by many users, to keep the configuration in a modular way. One way to achieve the same could be keeping the additional configuration inside 'Telegraf/config/$ConfigInstance/telegraf.d. For example:
 
@@ -482,7 +503,8 @@ create a directory 'telegraf.d' inside 'Telegraf/config/config/$ConfigInstance' 
    $ mkdir config/$ConfigInstance/telegraf.d
    $ cd config/$ConfigInstance/telegraf.d
   ```
-   keep additional configuration files inside that directory and pass the whole command to start the Telegraf in docker-compose.yml file as following:
+
+keep additional configuration files inside that directory and pass the whole command to start the Telegraf in docker-compose.yml file as following:
 	
 ```
 	command: ["telegraf -config=/etc/Telegraf/$ConfigInstance/$ConfigInstance.conf -config-directory=/etc/Telegraf/$ConfigInstance/telegraf.d"]
