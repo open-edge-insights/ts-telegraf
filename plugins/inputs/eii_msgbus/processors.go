@@ -63,7 +63,6 @@ func (writer *telegrafAccWriter) writeToTelegraf(metrics *[]telegraf.Metric, mNa
 
 		if profInfo != nil {
 			profInfo["total_time_spent_in_plugin"] = time.Now().UnixNano() - profInfo["ts_plugin_in"].(int64)
-			delete(profInfo, "ts_plugin_in")
 			for key, value := range profInfo {
 				elm.AddField(key, value)
 			}

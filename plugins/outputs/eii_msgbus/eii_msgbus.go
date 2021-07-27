@@ -183,8 +183,19 @@ func (emb *EiiMsgbus) Write(metrics []telegraf.Metric) error {
         topic := metric.Name()
         fields := metric.Fields()
         data["Name"] = topic
-        for key, val := range fields {
-            data[key] = val
+	// Converting int64 fields to int field, to make it acceptable to msgbug.
+        var ivalue interface{}
+        var cvalue interface{}
+        for key, value := range fields {
+            ivalue = value
+            switch ivalue.(type) {
+            case int64:
+                val := int(ivalue.(int64))
+                cvalue = val
+            default:
+                cvalue = ivalue
+            }
+            data[key] = cvalue
         }
         emb.pluginPubObj.write(topic, data)
     }
