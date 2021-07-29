@@ -78,14 +78,17 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
 	```
 
 * To start the mqtt-publisher with pressure data,
+   
    ```sh
    $ cd ../tools/mqtt/publisher/
    ```
    change the command option in [docker-compose.yml](../tools/mqtt/publisher/docker-compose.yml) to:
+   
    ```sh
    ["--pressure", "10:30"]
    ```
    Build and Run mqtt publisher:
+   
    ```sh
    $ docker-compose up --build -d
    ```
@@ -203,6 +206,7 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
 
 Let's have an example for the same. Let's assume there are two EII apps, one with the AppName "EII_APP1" and another with the AppName "EII_APP2", which are publishing the data to eii message bus.
 *The Telegraf's ETCD configuration for the same is*
+
 ```json
 {
    "config":{
@@ -328,6 +332,7 @@ Here, the value **'publisher1'**  acts as a key in the file **[config.json](./co
 Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus output plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
 
 *The Telegraf's ETCD configuration for the same is*
+
 ```json
 {
     "config": {
@@ -367,6 +372,7 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
         ]
     }
 }
+
 ```
 *The Telegraf.conf configuration sections for the same is*
 
@@ -499,6 +505,7 @@ For $ConfigInstance = 'Telegraf1'
 **Note**: It's been practice followed by many users, to keep the configuration in a modular way. One way to achieve the same could be keeping the additional configuration inside 'Telegraf/config/$ConfigInstance/telegraf.d. For example:
 
 create a directory 'telegraf.d' inside 'Telegraf/config/config/$ConfigInstance' :
+   
    ```
    $ mkdir config/$ConfigInstance/telegraf.d
    $ cd config/$ConfigInstance/telegraf.d
