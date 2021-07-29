@@ -15,7 +15,7 @@
             "num_worker": 2,
             "profiling": "false"
         },
-	"publisher1": {
+	"publisher": {
             "measurements": ["*"],
             "profiling": "false"
         }
@@ -34,7 +34,7 @@
         ],
         "Publishers": [
             {
-                "Name": "publisher1",
+                "Name": "publisher",
                 "Type": "zmq_tcp",
                 "EndPoint": "0.0.0.0:65077",
                 "Topics": [

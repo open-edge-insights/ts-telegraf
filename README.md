@@ -210,7 +210,7 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
 ```json
 {
    "config":{
-      "publisher1":{
+      "subscriber1":{
          "topics_info":[
             "topic-pfx1:temperature:10:2",
             "topic-pfx2:pressure::",
@@ -220,7 +220,7 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
          "num_worker":5,
          "profiling":"true"
       },
-      "publisher2":{
+      "subscriber2":{
          "topics_info":[
             "topic-pfx21:temperature2:10:2",
             "topic-pfx22:pressure2::",
@@ -234,7 +234,7 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
    "interfaces":{
       "Subscribers":[
          {
-            "Name":"publisher1",
+            "Name":"subscriber1",
             "EndPoint":"EII_APP1_container_name:5569",
             "Topics":[
                "*"
@@ -243,7 +243,7 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
 			"PublisherAppName": "EII_APP1"
          },
          {
-            "Name":"publisher2",
+            "Name":"subscriber2",
             "EndPoint":"EII_APP2_container_name:5570",
             "Topics":[
                "topic-pfx21",
@@ -260,12 +260,12 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
 *The Telegraf.conf configuration sections for the same is*
 
     [[inputs.eii_msgbus]]
-    instance_name = "publisher1"
+    instance_name = "subscriber1"
     data_format = "json"
     json_strict = true
     
     [[inputs.eii_msgbus]]
-    instance_name = "publisher2"
+    instance_name = "subscriber2"
     data_format = "json"
     json_strict = true
     
@@ -286,7 +286,7 @@ Below is the sample configuration
 ```json
 {
     "config": {
-        "publisher1": {
+        "publisher": {
             "measurements": ["*"],
             "profiling": "false"
         }
@@ -294,7 +294,7 @@ Below is the sample configuration
     "interfaces": {
         "Publishers": [
             {
-                "Name": "publisher1",
+                "Name": "publisher",
                 "Type": "zmq_tcp",
                 "EndPoint": "0.0.0.0:65077",
                 "Topics": [
@@ -312,7 +312,7 @@ Below is the sample configuration
 **Brief description of the configuration**.
 Like any other EII service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
 
-config :  Contains eii messagebus output plugin (**"publisher1"**). In the above sample configuration, the **"publisher1"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
+config :  Contains eii messagebus output plugin (**"publisher"**). In the above sample configuration, the **"publisher"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 - measurements : This is an array of measurements configuration, where user specifies, which measurement data should be published in msgbus.
 - profiling : This is to enable profiling mode of this plugin (value can be either "true" or "false").
@@ -323,10 +323,10 @@ config :  Contains eii messagebus output plugin (**"publisher1"**). In the above
 The plugin instance name is an additional key, kept into plugin configuration section. This key is used to fetch the configuration from ETCD. Below is the minimmum, sample configuration with single plugin instance.
 
     [[outputs.eii_msgbus]]
-    **instance_name = "publisher1"**
+    instance_name = "publisher"
 
 
-Here, the value **'publisher1'**  acts as a key in the file **[config.json](./config.json)**. For this key, there is configuration in the **'interfaces' and 'config'** sections of the file **[config.json](./config.json)**. So the value of** 'instance_name'** acts as a connect/glue between the Telegraf configuration **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and the **ETCD configuration [config.json](./config.json)**
+Here, the value **'publisher'**  acts as a key in the file **[config.json](./config.json)**. For this key, there is configuration in the **'interfaces' and 'config'** sections of the file **[config.json](./config.json)**. So the value of** 'instance_name'** acts as a connect/glue between the Telegraf configuration **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and the **ETCD configuration [config.json](./config.json)**
 
 ## Advanced: Multiple plugin sections of EII message bus output plugin
 Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus output plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
@@ -404,7 +404,7 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
         ],
         "Publishers": [
             {
-                "Name": "publisher1",
+                "Name": "publisher",
                 "Type": "zmq_ipc",
                 "EndPoint": {
                   "SocketDir": "/EII/sockets",
@@ -442,53 +442,154 @@ For $ConfigInstance = 'Telegraf1'
 [config](./config)/Telegraf1/Telegraf1.conf (for production mode) and [config](./config)/Telegraf1/Telegraf1_devmode.conf (for developer mode)
 - The additional docker compose section which has to be manually added in the file 'docker-compose.yml' would be
 	
-    ```
-	  ia_telegraf1:
-	    depends_on:
-	      - ia_common
-	    build:
-	      context: $PWD/../Telegraf
-	      dockerfile: $PWD/../Telegraf/Dockerfile
-	      args:
-	        EII_VERSION: ${EII_VERSION}
-	        EII_UID: ${EII_UID}
-	        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
-	        TELEGRAF_SOURCE_TAG: ${TELEGRAF_SOURCE_TAG}
-	        TELEGRAF_GO_VERSION: ${TELEGRAF_GO_VERSION}
-	    container_name: ia_telegraf1
-	    hostname: ia_telegraf1
-	    image: ${DOCKER_REGISTRY}openedgeinsights/ia_telegraf:${EII_VERSION}
-	    restart: unless-stopped
-	    ipc: "none"
-	    read_only: true
-	    environment:
-	      AppName: "Telegraf"
-	      ConfigInstance: "Telegraf1"
-	      CertType: "pem,zmq"
-	      DEV_MODE: ${DEV_MODE}
-	      no_proxy: "${ETCD_HOST},ia_influxdbconnector"
-	      NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
-	      ETCD_HOST: ${ETCD_HOST}
-	      MQTT_BROKER_HOST: $MQTT_BROKER_HOST
-	      INFLUX_SERVER: 'ia_influxdbconnector'
-	      INFLUXDB_PORT: $INFLUXDB_PORT
-	      ETCD_PREFIX: ${ETCD_PREFIX}
-	    user: ${EII_UID}
-            networks:
-              - eii
-	    volumes:
-	      - "vol_temp_telegraf:/tmp/"
-	      - "vol_eii_socket:${SOCKET_DIR}"
-	    secrets:
-	      - ca_etcd
-	      - etcd_Telegraf_cert
-	      - etcd_Telegraf_key
-	```
+```
+  ia_telegraf1:
+    depends_on:
+      - ia_common
+    build:
+      context: $PWD/../Telegraf
+      dockerfile: $PWD/../Telegraf/Dockerfile
+      args:
+        EII_VERSION: ${EII_VERSION}
+        EII_UID: ${EII_UID}
+        EII_USER_NAME: ${EII_USER_NAME}
+        TELEGRAF_SOURCE_TAG: ${TELEGRAF_SOURCE_TAG}
+        TELEGRAF_GO_VERSION: ${TELEGRAF_GO_VERSION}
+        UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
+        CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
+    container_name: ia_telegraf1
+    hostname: ia_telegraf1
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_telegraf:${EII_VERSION}
+    restart: unless-stopped
+    ipc: "none"
+    security_opt:
+    - no-new-privileges
+    read_only: true
+    healthcheck:
+      test: ["CMD-SHELL", "exit", "0"]
+      interval: 5m
+    environment:
+      AppName: "Telegraf"
+      ConfigInstance: "Telegraf1"
+      CertType: "pem,zmq"
+      DEV_MODE: ${DEV_MODE}
+      no_proxy: "${ETCD_HOST},ia_influxdbconnector"
+      NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
+      ETCD_HOST: ${ETCD_HOST}
+      ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
+      MQTT_BROKER_HOST: 'ia_mqtt_broker'
+      INFLUX_SERVER: 'ia_influxdbconnector'
+      INFLUXDB_PORT: $INFLUXDB_PORT
+      ETCD_PREFIX: ${ETCD_PREFIX}
+    networks:
+      - eii
+    volumes:
+      - "vol_temp_telegraf:/tmp/"
+      - "vol_eii_socket:${SOCKET_DIR}"
+    secrets:
+      - ca_etcd
+      - etcd_Telegraf_cert
+      - etcd_Telegraf_key
+```
+ > **Note**: If user wants to add telegraf output plugin in telegraf instance, modify [config.json](config.json), [docker-compose.yml](docker-compose.yml) and telegraf configuration(.conf) files.
+ >
+ > 1. Add publisher configuration in [config.json](config.json):
+ > ```
+ >   {
+ >       "config": {
+ >
+ >           ...,
+ >           "<output plugin instance_name>": {
+ >               "measurements": ["*"],
+ >               "profiling": "true"
+ >           }
+ >       },
+ >       "interfaces": {
+ >           ...,
+ >           "Publishers": [
+ >               ...,
+ >               {
+ >                   "Name": "<output plugin instance_name>",
+ >                   "Type": "zmq_tcp",
+ >                   "EndPoint": "0.0.0.0:<publisher port>",
+ >                   "Topics": [
+ >                       "*"
+ >                   ],
+ >                   "AllowedClients": [
+ >                       "*"
+ >                   ]
+ >               }
+ >
+ >           ]
+ >       }
+ >   }
+ >   ```
+ >   Example:
+ >   ```
+ >   {
+ >       "config": {
+ >
+ >           ...,
+ >           "publisher1": {
+ >               "measurements": ["*"],
+ >               "profiling": "true"
+ >           }
+ >       },
+ >       "interfaces": {
+ >           ...,
+ >           "Publishers": [
+ >               ...,
+ >               {
+ >                   "Name": "publisher1",
+ >                   "Type": "zmq_tcp",
+ >                   "EndPoint": "0.0.0.0:65078",
+ >                   "Topics": [
+ >                       "*"
+ >                   ],
+ >                   "AllowedClients": [
+ >                       "*"
+ >                   ]
+ >               }
+ >
+ >           ]
+ >       }
+ >   }
+ >   ```
+ >   2. Expose "publisher port" in [docker-compose.yml](docker-compose.yml) file:
+ >   ```
+ >     ia_telegraf<ConfigInstance number>:
+ >       ...
+ >       ports:
+ >         - <publisher port>:<publisher port>
+ >   ```
+ >   Example:
+ >   ```
+ >     ia_telegraf<ConfigInstance number>:
+ >       ...
+ >       ports:
+ >         - 65078:65078
+ >   ```
+ >
+ >   3. Add eii_msgbus output plugin in telegraf instance config file [config](./config)/$ConfigInstance/$ConfigInstance.conf (for production mode) and 
+ >   [config](./config)/$ConfigInstance/$ConfigInstance_devmode.conf (for developer mode).
+ >
+ >     [[outputs.eii_msgbus]]
+ >     instance_name = "<publisher instance>"
+ >
+ >   Example:
+ >   For $ConfigInstance = 'Telegraf1'
+ >   
+ >   User needs to add following section in [config](./config)/Telegraf1/Telegraf1.conf (for production mode) and [config](./config)/Telegraf1/Telegraf1_devmode.conf (for developer mode) 
+ >
+ >     [[outputs.eii_msgbus]]
+ >     instance_name = "publisher1"
+ >
+
 - After that, user will need to run the **builder.py** script command to allow the changes of the dockerfile take place.
 
     ```    
     $ cd [WORK_DIR]/IEdgeInsights/build
-    $ python3 -f builder.py
+    $ python3 builder.py
     ```
 
 - User will need to provision, build and bring up all the container again by using below command.
@@ -497,7 +598,8 @@ For $ConfigInstance = 'Telegraf1'
     $ cd [WORK_DIR]/IEdgeInsights/build/provision
     $ sudo ./provision.sh ../docker-compose.yml
     $ cd ../
-    $ docker compose up build -d
+    $ docker-compose -f docker-compose-build.yml build
+    $ docker-compose up -d
     ```
 
 - Based on above example, user can check the telegraf service will have multiple  container as by using docker ps command.
