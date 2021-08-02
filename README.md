@@ -3,19 +3,19 @@
 
 1. [Telegraf in brief](#Telegraf-in-brief)
 
-2. [Telegraf's default configuration](#Telegraf's-default-configuration)
+2. [Telegraf's default configuration](#Telegrafs-default-configuration)
 
 3. [MQTT sample configuration and tool to test it](#MQTT-sample-configuration-and-tool-to-test-it)
 
 4. [Enabling EII message bus input plugin in Telegraf](#Enabling-EII-message-bus-input-plugin-in-Telegraf)
 
-5. [Advanced: Multiple plugin sections of EII message bus input plugin](#Advanced:-Multiple-plugin-sections-of-EII-message-bus-input-plugin)
+5. [Advanced: Multiple plugin sections of EII message bus input plugin](#Advanced-Multiple-plugin-sections-of-EII-message-bus-input-plugin)
 
 6. [Enabling EII message bus Output plugin in Telegraf](#Enabling-EII-message-bus-output-plugin-in-Telegraf)
 
-7. [Advanced: Multiple plugin sections of EII message bus output plugin](#Advanced:-Multiple-plugin-sections-of-EII-message-bus-output-plugin)
+7. [Advanced: Multiple plugin sections of EII message bus output plugin](#Advanced-Multiple-plugin-sections-of-EII-message-bus-output-plugin)
 
-8. [Optional: Adding multiple telegraf instances](#Optional:-Adding-multiple-telegraf-instances)
+8. [Optional: Adding multiple telegraf instances](#Optional-Adding-multiple-telegraf-instances)
 
 ## Telegraf in brief
 -------------------
@@ -92,7 +92,7 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
    ```sh
    $ docker-compose up --build -d
    ```
-please refer [tools/mqtt/README.md](../tools/mqtt/README.md)
+please refer [tools/mqtt/publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt/README.md)
 
 ## Enabling EII message bus input plugin in Telegraf
 
@@ -199,7 +199,7 @@ Here, the value **'default'**  acts as a key in the file **[config.json](./confi
 *Note: 
 Since it’s telegraf input plugin, the telegraf’s parser configuration
 has to be in Telegraf.conf file. The more information of the telegraf json parser plugin can be be found at https://github.com/influxdata/telegraf/tree/master/plugins/parsers/json.*
-In case if there are multiple telegraf instances, then the location of the Telegraf configuration files would be different. For more details please refer the section [Optional: Adding multiple telegraf instance](#Optional: Adding multiple telegraf instance)
+In case if there are multiple telegraf instances, then the location of the Telegraf configuration files would be different. For more details please refer the section [Optional: Adding multiple telegraf instance](#Optional-Adding-multiple-telegraf-instances)
 
 ## Advanced: Multiple plugin sections of EII message bus input plugin
 Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus input plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
