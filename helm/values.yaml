@@ -1,0 +1,6 @@
+config:
+    telegraf:
+      name: telegraf
+      publish_port: 65077
+      MQTT_BROKER_HOST: ""
+      IPC: false

@@ -14,19 +14,35 @@
             "queue_len": 10,
             "num_worker": 2,
             "profiling": "false"
+        },
+	"publisher": {
+            "measurements": ["*"],
+            "profiling": "false"
         }
     },
     "interfaces": {
         "Subscribers": [
             {
                 "Name": "default",
-		"PublisherAppName": "Telegraf",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:60515",
+                "EndPoint": "ia_zmq_broker:60515",
                 "Topics": [
                     "*"
                 ],
                 "PublisherAppName": "ZmqBroker"
+            }
+        ],
+        "Publishers": [
+            {
+                "Name": "publisher",
+                "Type": "zmq_tcp",
+                "EndPoint": "0.0.0.0:65077",
+                "Topics": [
+                    "*"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
             }
         ]
     }

@@ -1,12 +1,12 @@
 /*
-Copyright (c) 2020 Intel Corporation.
+Copyright (c) 2021 Intel Corporation
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
@@ -27,6 +27,7 @@ import (
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/parsers"
 	"time"
+	"encoding/json"
 )
 
 // Does JSON parsing using telegraf JSON parser
@@ -37,7 +38,11 @@ func doJSONParsing(parser parsers.Parser, data dataFromMsgBus) (*[]telegraf.Metr
 		t1 = time.Now().UnixNano()
 	}
 
-	metrics, err := parser.Parse(data.msg.Blob)
+	buffer, err := json.Marshal(data.msg.Data)
+	if err != nil {
+		return nil, fmt.Errorf("Error in coverting data to byte array:%v", err)
+	}
+	metrics, err := parser.Parse(buffer)
 
 	if data.profInfo != nil {
 		data.profInfo["total_time_spent_in_json_parser"] = time.Now().UnixNano() - t1
@@ -58,7 +63,6 @@ func (writer *telegrafAccWriter) writeToTelegraf(metrics *[]telegraf.Metric, mNa
 
 		if profInfo != nil {
 			profInfo["total_time_spent_in_plugin"] = time.Now().UnixNano() - profInfo["ts_plugin_in"].(int64)
-			delete(profInfo, "ts_plugin_in")
 			for key, value := range profInfo {
 				elm.AddField(key, value)
 			}
