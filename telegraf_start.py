@@ -27,6 +27,7 @@ import tempfile
 from distutils.util import strtobool
 import cfgmgr.config_manager as cfg
 from util.log import configure_logging
+import shlex
 
 
 TMP_DIR = tempfile.gettempdir()
@@ -78,7 +79,7 @@ def main():
                 telegraf_conf = "/etc/Telegraf/"+cfg_inst+"/"+cfg_inst+".conf"
             subprocess.call(["telegraf", "-config=" + telegraf_conf])
         else:
-            subprocess.call(command.split())
+            subprocess.call(shlex.split(command))
 
     except subprocess.CalledProcessError as err:
         log.error(err, exc_info=True)
