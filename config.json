@@ -5,33 +5,12 @@
             "password": "admin123",
             "dbname": "datain"
         },
-        "default": {
-            "topics_info": [
-                "topic-pfx1:temperature:10:2",
-                "topic-pfx2:pressure::",
-                "topic-pfx3:humidity"
-            ],
-            "queue_len": 10,
-            "num_worker": 2,
-            "profiling": "false"
-        },
 	"publisher": {
             "measurements": ["*"],
             "profiling": "false"
         }
     },
     "interfaces": {
-        "Subscribers": [
-            {
-                "Name": "default",
-                "Type": "zmq_tcp",
-                "EndPoint": "ia_zmq_broker:60515",
-                "Topics": [
-                    "*"
-                ],
-                "PublisherAppName": "ZmqBroker"
-            }
-        ],
         "Publishers": [
             {
                 "Name": "publisher",
