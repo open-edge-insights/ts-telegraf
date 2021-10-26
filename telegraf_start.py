@@ -44,6 +44,7 @@ def read_config(app_cfg, dev_mode, log):
         try:
             with open(INFLUX_CA_PATH, 'w') as fpd:
                 fpd.write(app_cfg["ca_cert"])
+            os.chmod(INFLUX_CA_PATH, 0o400)
         except (OSError, IOError) as err:
             log.debug("Failed creating file: {}, Error: {} ".format(
                 INFLUX_CA_PATH, err))
