@@ -29,7 +29,9 @@ ENV PYTHONPATH ${PYTHONPATH}:.
 
 ARG EII_UID
 RUN mkdir -p /etc/ssl/ca && \
-    chown -R ${EII_UID} /etc/ssl/
+    chown -R ${EII_UID} /etc/ssl/ && \
+    chown -R ${EII_UID}:${EII_UID} /tmp/ && \
+    chmod -R 760 /tmp/
 
 ARG DOCKER_REGISTRY
 FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
