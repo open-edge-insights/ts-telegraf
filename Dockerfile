@@ -90,7 +90,7 @@ RUN patch -p0 $TELEGRAF_SRC_DIR/plugins/inputs/all/all.go -i /tmp/all.patch && \
 COPY ./plugins/outputs/all/all.patch /tmp/all.patch
 COPY ./plugins/outputs/eii_msgbus /src/telegraf/plugins/outputs/eii_msgbus
 
-RUN patch -p0 $TELEGRAF_SRC_DIR/plugins/outputs/all/all.go -i /tmp/all.patch && \ 
+RUN patch -p0 $TELEGRAF_SRC_DIR/plugins/outputs/all/all.go -i /tmp/all.patch && \
     rm -f /tmp/all.patch
 
 RUN cd $TELEGRAF_SRC_DIR && \
@@ -101,6 +101,8 @@ RUN cd $TELEGRAF_SRC_DIR && \
 FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
 WORKDIR /app
 ARG ARTIFACTS
+RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5 && \
+    rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/Telegraf/ /etc/Telegraf/
 COPY --from=builder $ARTIFACTS/telegraf .
 COPY --from=builder $ARTIFACTS/bin/telegraf .local/bin/
