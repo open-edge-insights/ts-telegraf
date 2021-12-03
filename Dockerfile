@@ -101,7 +101,7 @@ RUN cd $TELEGRAF_SRC_DIR && \
 FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
 WORKDIR /app
 ARG ARTIFACTS
-RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5 && \
+RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5 zlib1g && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/Telegraf/ /etc/Telegraf/
 COPY --from=builder $ARTIFACTS/telegraf .
