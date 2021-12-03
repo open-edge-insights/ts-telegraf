@@ -23,7 +23,7 @@ SOFTWARE.
 package eii_msgbus
 
 import (
-	eiicfgmgr "ConfigMgr/eiiconfigmgr"
+	eiicfgmgr "github.com/open-edge-insights/eii-configmgr-go/eiiconfigmgr"
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/inputs"
 	"github.com/influxdata/telegraf/plugins/parsers"

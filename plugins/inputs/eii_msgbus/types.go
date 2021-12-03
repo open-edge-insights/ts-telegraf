@@ -23,9 +23,9 @@ SOFTWARE.
 package eii_msgbus
 
 import (
-	eiicfgmgr "ConfigMgr/eiiconfigmgr"
-	eiimsgbus "EIIMessageBus/eiimsgbus"
-	types "EIIMessageBus/pkg/types"
+	eiicfgmgr "github.com/open-edge-insights/eii-configmgr-go/eiiconfigmgr"
+	eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
+	types "github.com/open-edge-insights/eii-messagebus-go/pkg/types"
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/parsers"
 	"sync"

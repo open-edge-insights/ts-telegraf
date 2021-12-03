@@ -23,7 +23,7 @@ SOFTWARE.
 package eii_msgbus
 
 import (
-	eiimsgbus "EIIMessageBus/eiimsgbus"
+	eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
 	"fmt"
 	"time"
 )

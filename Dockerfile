@@ -32,11 +32,6 @@ LABEL description="Telegraf image"
 
 WORKDIR /app
 
-ARG TELEGRAF_GO_VERSION
-RUN wget -q --show-progress  https://golang.org/dl/go${TELEGRAF_GO_VERSION}.linux-amd64.tar.gz && \
-    rm -rf /usr/local/go && \
-    tar -C /usr/local -xzf go${TELEGRAF_GO_VERSION}.linux-amd64.tar.gz
-
 COPY . ./Telegraf
 
 RUN mkdir /etc/Telegraf && \
@@ -56,8 +51,8 @@ ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 
-COPY --from=common /eii/common/libs/EIIMessageBus/go/EIIMessageBus /usr/local/go/src/EIIMessageBus
-COPY --from=common /eii/common/libs/ConfigMgr/go/ConfigMgr /usr/local/go/src/ConfigMgr
+COPY --from=common /eii/common/libs/EIIMessageBus/go/EIIMessageBus /src/EIIMessageBus
+COPY --from=common /eii/common/libs/ConfigMgr/go/ConfigMgr /src/ConfigMgr
 
 ENV PATH="$PATH:/usr/local/go/bin" \
     PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" \
@@ -68,8 +63,7 @@ ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOU
     CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
 ARG TELEGRAF_SOURCE_TAG
-RUN mkdir /src/ && \
-    cd /src/ && \
+RUN cd /src/ && \
     git clone https://github.com/influxdata/telegraf.git && \
     cd telegraf && \
     git fetch --tags && \
@@ -92,6 +86,10 @@ COPY ./plugins/outputs/eii_msgbus /src/telegraf/plugins/outputs/eii_msgbus
 
 RUN patch -p0 $TELEGRAF_SRC_DIR/plugins/outputs/all/all.go -i /tmp/all.patch && \
     rm -f /tmp/all.patch
+
+RUN echo "replace github.com/open-edge-insights/eii-configmgr-go => ../ConfigMgr/" >> $TELEGRAF_SRC_DIR/go.mod
+
+RUN echo "replace github.com/open-edge-insights/eii-messagebus-go => ../EIIMessageBus/" >> $TELEGRAF_SRC_DIR/go.mod
 
 RUN cd $TELEGRAF_SRC_DIR && \
     make && \
