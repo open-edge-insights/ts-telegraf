@@ -65,8 +65,8 @@ services:
     volumes:
       - "vol_temp_telegraf:/tmp/"
       - "vol_eii_socket:${SOCKET_DIR}"
-      - ./Certificates/Telegraf:/Certificates/Telegraf
-      - ./Certificates/rootca:/Certificates/rootca
+      - ./Certificates/Telegraf:/run/secrets/Telegraf
+      - ./Certificates/rootca:/run/secrets/rootca
 
 volumes:
   vol_temp_telegraf:
