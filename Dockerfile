@@ -64,10 +64,7 @@ ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOU
 
 ARG TELEGRAF_SOURCE_TAG
 RUN cd /src/ && \
-    git clone https://github.com/influxdata/telegraf.git && \
-    cd telegraf && \
-    git fetch --tags && \
-    git checkout tags/${TELEGRAF_SOURCE_TAG} -b ${TELEGRAF_SOURCE_TAG}-branch
+    git clone --single-branch -b ${TELEGRAF_SOURCE_TAG} https://github.com/influxdata/telegraf.git
 
 ENV TELEGRAF_SRC_DIR /src/telegraf
 
