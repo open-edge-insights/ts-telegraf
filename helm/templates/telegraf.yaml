@@ -81,6 +81,10 @@ spec:
           value: ''
         - name: MQTT_BROKER_HOST
           value: {{ .Values.config.telegraf.MQTT_BROKER_HOST }}
+        - name: INFLUXDB_USERNAME
+          value: '{{ .Values.env.INFLUXDB_USERNAME }}'
+        - name: INFLUXDB_PASSWORD
+          value: '{{ .Values.env.INFLUXDB_PASSWORD }}'
         - name: INFLUX_SERVER
           value: "influxdbconnector"
         - name: INFLUXDB_PORT

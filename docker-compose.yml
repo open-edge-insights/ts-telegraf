@@ -58,6 +58,8 @@ services:
       INFLUX_SERVER: 'ia_influxdbconnector'
       INFLUXDB_PORT: $INFLUXDB_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
+      INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}
+      INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}
     ports:
       - 65077:65077
     networks:

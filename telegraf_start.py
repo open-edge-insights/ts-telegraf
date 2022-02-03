@@ -37,8 +37,6 @@ INFLUX_CA_PATH = os.path.join(TMP_DIR, "ca_certificate.pem")
 def read_config(app_cfg, dev_mode, log):
     """Read the configuration from etcd
     """
-    os.environ["INFLUXDB_USERNAME"] = app_cfg["influxdb"]["username"]
-    os.environ["INFLUXDB_PASSWORD"] = app_cfg["influxdb"]["password"]
     os.environ["INFLUXDB_DBNAME"] = app_cfg["influxdb"]["dbname"]
 
     if not dev_mode:
