@@ -34,7 +34,7 @@ import (
 
 
 type EiiMsgbus struct {
-    Instance_name   string `toml:"instance_name"`
+    InstanceName   string `toml:"instance_name"`
     pluginConfigObj eiiMsgbusOutputPluginConfig
     pluginPubObj    pluginPublisher
     Log             telegraf.Logger

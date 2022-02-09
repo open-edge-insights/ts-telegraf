@@ -32,7 +32,7 @@ import (
 
 // EiiMsgbus : plugin object
 type EiiMsgbus struct {
-	Instance_name   string `toml:"instance_name"`
+	InstanceName   string `toml:"instance_name"`
 	pluginConfigObj eiiMsgbusInputPluginConfig
 	pluginRtData    pluginRuntimeData
 	parser          parsers.Parser

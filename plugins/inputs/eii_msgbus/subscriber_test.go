@@ -32,7 +32,7 @@ import (
 )
 
 // This function returns the test json meesage
-func getTestJsonData() map[string]interface{} {
+func getTestJSONData() map[string]interface{} {
 	jsonMsg := map[string]interface{}{
 		"str":   "hello",
 		"intr":  2.0,
@@ -59,7 +59,7 @@ func testSubscriber(t *testing.T, eiiMsgBus *EiiMsgbus, jsonMsg map[string]inter
 	buffer = buffer
 	assert.NoError(t, err)
 
-	for key, _ := range eiiMsgBus.pluginConfigObj.mapOfPrefixToConfig {
+	for key := range eiiMsgBus.pluginConfigObj.mapOfPrefixToConfig {
 		msg := eiimsgbustype.NewMsgEnvelope(nil, buffer)
 		msg.Name = key
 		for _, sub := range eiiMsgBus.pluginSubObj.msgBusSubMap {
@@ -83,7 +83,7 @@ func testSubscriber(t *testing.T, eiiMsgBus *EiiMsgbus, jsonMsg map[string]inter
 func TestSubscriber(t *testing.T) {
 	fmt.Printf("\n===========In TestSubscriber=========\n")
 	eiiMsgBus := NewTestEiiMsgbus()
-	jsonMsg := getTestJsonData()
+	jsonMsg := getTestJSONData()
 	testSubscriber(t, eiiMsgBus, jsonMsg, "TestSubscriber")
 }
 
@@ -91,6 +91,6 @@ func TestSubscriberWithProfiler(t *testing.T) {
 	fmt.Printf("\n===========In TestSubscriberWithProfiler=========\n")
 	eiiMsgBus := NewTestEiiMsgbus()
 	eiiMsgBus.pluginConfigObj.profiling = true
-	jsonMsg := getTestJsonData()
+	jsonMsg := getTestJSONData()
 	testSubscriber(t, eiiMsgBus, jsonMsg, "TestSubscriberWithProfiler")
 }

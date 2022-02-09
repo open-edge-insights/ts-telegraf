@@ -95,7 +95,7 @@ func (pluginSubObj *pluginSubscriber) receiveFromAllTopics() error {
 
 // Send shutdown signal for every thread
 func (pluginSubObj *pluginSubscriber) sendShutdownSignal() {
-	for _, _ = range pluginSubObj.subTopics {
+	for range pluginSubObj.subTopics {
 		pluginSubObj.pluginRtData.subControlChannel <- 'E'
 	}
 }
