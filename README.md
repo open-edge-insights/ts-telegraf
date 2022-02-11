@@ -549,7 +549,7 @@ For $ConfigInstance = 'Telegraf1'
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       MQTT_BROKER_HOST: ${HOST_IP}
-      INFLUX_SERVER: 'ia_influxdbconnector'
+      INFLUX_SERVER: ${HOST_IP}
       INFLUXDB_PORT: $INFLUXDB_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
     networks:
