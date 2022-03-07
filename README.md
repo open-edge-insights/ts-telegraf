@@ -674,10 +674,10 @@ For $ConfigInstance = 'Telegraf1'
 - User will need to provision, build and bring up all the container again by using below command.
 
     ```
-    cd [WORK_DIR]/IEdgeInsights/build/provision
-    sudo ./provision.sh ../docker-compose.yml
-    cd ../
+    cd [WORK_DIR]/IEdgeInsights/build/
     docker-compose -f docker-compose-build.yml build
+    docker-compose up -d ia_configmgr_agent
+    # Check `$ docker logs -f ia_configmgr_agent` if Provision is Done
     docker-compose up -d
     ```
 
