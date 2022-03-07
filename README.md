@@ -530,7 +530,7 @@ For $ConfigInstance = 'Telegraf1'
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
     container_name: ia_telegraf1
     hostname: ia_telegraf1
-    image: ${DOCKER_REGISTRY}ia_telegraf:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_telegraf:${EII_VERSION}
     restart: unless-stopped
     ipc: "none"
     security_opt:
