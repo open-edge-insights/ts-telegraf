@@ -54,7 +54,7 @@ spec:
       {{- end }}
       containers:
       - name: ia-telegraf
-        image: {{ .Values.DOCKER_REGISTRY }}ia_telegraf:{{ .Values.EII_VERSION }}
+        image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_telegraf:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         securityContext:
           privileged: true
