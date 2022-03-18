@@ -1,34 +1,31 @@
-# Telegraf
-
 # Contents
 
-1. [Telegraf in brief](#Telegraf-in-brief)
-
-2. [Telegraf's default configuration](#Telegrafs-default-configuration)
-
-3. [MQTT sample configuration and tool to test it](#MQTT-sample-configuration-and-tool-to-test-it)
-
-4. [Enabling EII message bus input plugin in Telegraf](#Enabling-EII-message-bus-input-plugin-in-Telegraf)
-
-5. [Advanced: Multiple plugin sections of EII message bus input plugin](#Advanced-Multiple-plugin-sections-of-EII-message-bus-input-plugin)
-
-6. [Enabling EII message bus Output plugin in Telegraf](#Enabling-EII-message-bus-output-plugin-in-Telegraf)
-
-7. [Advanced: Multiple plugin sections of EII message bus output plugin](#Advanced-Multiple-plugin-sections-of-EII-message-bus-output-plugin)
-
-8. [Optional: Adding multiple telegraf instances](#Optional-Adding-multiple-telegraf-instances)
+- [Contents](#contents)
+  - [Telegraf in brief](#telegraf-in-brief)
+  - [Telegraf's default configuration](#telegrafs-default-configuration)
+  - [MQTT sample configuration and tool to test it](#mqtt-sample-configuration-and-tool-to-test-it)
+  - [Enabling message bus input plugin in Telegraf](#enabling-message-bus-input-plugin-in-telegraf)
+  - [Overview](#overview)
+  - [Advanced: Multiple plugin sections of OEI message bus input plugin](#advanced-multiple-plugin-sections-of-oei-message-bus-input-plugin)
+    - [Using input plugin](#using-input-plugin)
+  - [Enabling message bus Output plugin in Telegraf](#enabling-message-bus-output-plugin-in-telegraf)
+  - [Advanced: Multiple plugin sections of message bus output plugin](#advanced-multiple-plugin-sections-of-message-bus-output-plugin)
+  - [Run Telegraf Input output plugin in IPC mode](#run-telegraf-input-output-plugin-in-ipc-mode)
+  - [Optional: Adding multiple telegraf instances](#optional-adding-multiple-telegraf-instances)
 
 ## Telegraf in brief
 
--------------------
-Telegraf is a part of TICK stack (<https://www.influxdata.com/time-series-platform/>). This is a plugin based agent.  Telegraf has many input and output plugins. In EII's basic configuration, it's being used for data ingestion. However EII framework does not restrict Telegraf's any of the features. In EII basic configuration uses Telegraf for data ingestion and sending it to influxdb.
+Telegraf is a part of TICK stack (<https://www.influxdata.com/time-series-platform/>). This is a plugin based agent.  Telegraf has many input and output plugins. In OEI's basic configuration, it's being used for data ingestion. However OEI framework does not restrict Telegraf's any of the features. In OEI basic configuration uses Telegraf for data ingestion and sending it to influxdb.
+
+>**Note:** In this document, you will find labels of 'Edge Insights for Industrial (EII)' for filenames, paths, code snippets, and so on. Consider the references of EII as Open Edge Insights (OEI). This is due to the product name change of EII as OEI.
 
 ## Telegraf's default configuration
 
 1. Telegraf starts with the default configuration which is present at [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf) (for the dev mode the name is 'Telegraf_devmode.conf'). By default the below plugins are enabled.
- -  MQTT input plugin (**[[inputs.mqtt_consumer]]**)
- -  EII message bus input plugin (**[[inputs.eii_msgbus]]**)
- -  Influxdb output plugin (**[[outputs.influxdb]]**)
+
+- MQTT input plugin (**[[inputs.mqtt_consumer]]**)
+- OEI message bus input plugin (**[[inputs.eii_msgbus]]**)
+- Influxdb output plugin (**[[outputs.influxdb]]**)
 
 Telegraf will be started using script 'telegraf_start.py. This script will get the configuration from ETCD first and then it will start the  Telegraf service by picking the right configuration depending on the developer/production mode. By default only single instance of Telegraf container runs (named 'ia_telegraf').
 
@@ -99,18 +96,18 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
 
 please refer [tools/mqtt/publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt/README.md)
 
-## Enabling EII message bus input plugin in Telegraf
+## Enabling message bus input plugin in Telegraf
 
-The purpose of this enablement is to allow telegraf received data from EII message bus and storing it into influxdb that able to be scalable.
+The purpose of this enablement is to allow telegraf received data from message bus and storing it into influxdb that able to be scalable.
 
-**Overview**
+## Overview
 
 The plugin subscribes to configured topic / topic prefixes. Plugin has component
 called subscriber which receives the data from eii message bus.
 After receiving the data, depending on configuration, the plugin process
 the data, either synchronously or asynchronously.
 
-- In **synchronous** processing**, the receiver thread (thread which receives the data from EII message bus) is also resposible for the processing of the data (json parsing). After processing the previous data only, the receiver thread process next data available on the EII message bus.
+- In **synchronous** processing**, the receiver thread (thread which receives the data from message bus) is also resposible for the processing of the data (json parsing). After processing the previous data only, the receiver thread process next data available on the message bus.
 - In **asynchronous** processing the  receiver thread  receives the data and put it into the queue. There will be pool of threads which will be dequeing the data from the queue and processing it.
 
 **Guidelines for choosing the data processing options are**
@@ -130,7 +127,7 @@ Configuration of the plugin is divided into two parts
 
 **ETCD configuration**
 
-Since this is eii message bus plugin and so it's part of EII framework,
+Since this is eii message bus plugin and so it's part of OEI framework,
 message bus configuration and plugin's topic specific configuration is kept into etcd.
 Below is the sample configuration
 
@@ -171,7 +168,7 @@ Below is the sample configuration
 
 **Brief description of the configuration**.
 
-Like any other EII service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
+Like any other OEI service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
 
 config :  Contains the configuration of the influxdb (**"influxdb"**) and  eii messagebus input plugin (**"default"**). In the above sample configuration, the **"default"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
@@ -211,11 +208,11 @@ Since it’s telegraf input plugin, the telegraf’s parser configuration
 has to be in Telegraf.conf file. The more information of the telegraf json parser plugin can be be found at <https://github.com/influxdata/telegraf/tree/master/plugins/parsers/json>.*
 In case if there are multiple telegraf instances, then the location of the Telegraf configuration files would be different. For more details please refer the section [Optional: Adding multiple telegraf instance](#Optional-Adding-multiple-telegraf-instances)
 
-## Advanced: Multiple plugin sections of EII message bus input plugin
+## Advanced: Multiple plugin sections of OEI message bus input plugin
 
-Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus input plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
+Like any other Telegraf plugin user can keep multiple configuration sections of the message bus input plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
 
-Let's have an example for the same. Let's assume there are two EII apps, one with the AppName "EII_APP1" and another with the AppName "EII_APP2", which are publishing the data to eii message bus.
+Let's have an example for the same. Let's assume there are two OEI apps, one with the AppName "EII_APP1" and another with the AppName "EII_APP2", which are publishing the data to eii message bus.
 *The Telegraf's ETCD configuration for the same is*
 
 ```json
@@ -283,9 +280,9 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
 
 ### Using input plugin
 
-- By default EII message bus input plugin is disabled. To Configure the EII input plugin, uncomment the following lines in **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and  **[config/Telegraf/Telegraf_devmode.conf](./config/Telegraf/Telegraf_devmode.conf)**
+- By default message bus input plugin is disabled. To Configure the OEI input plugin, uncomment the following lines in **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and  **[config/Telegraf/Telegraf_devmode.conf](./config/Telegraf/Telegraf_devmode.conf)**
 
-    ```
+    ```sh
     [[inputs.eii_msgbus]]
     instance_name = "default"
     data_format = "json"
@@ -301,9 +298,9 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
     json_name_key = ""
     ```
 
-- Edit [config.json](config.json) to add EII message bus input plugin.
+- Edit [config.json](config.json) to add message bus input plugin.
 
-  ```
+  ```sh
   {
       "config": {
           ...
@@ -336,7 +333,7 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
   }
   ```
 
-## Enabling EII message bus Output plugin in Telegraf
+## Enabling message bus Output plugin in Telegraf
 
 **Purpose**
 Receiving the data from Telegraf Input Plugin and publish data to eii msgbus.
@@ -348,7 +345,7 @@ Configuration of the plugin is divided into two parts
 2. Configuration in Telegraf.conf file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 **ETCD configuration**
-Since this is eii message bus plugin and so it’s part of EII framework, message bus configuration and plugin’s topic specific configuration is kept into etcd.
+Since this is eii message bus plugin and so it’s part of OEI framework, message bus configuration and plugin’s topic specific configuration is kept into etcd.
 Below is the sample configuration
 
 ```json
@@ -378,7 +375,7 @@ Below is the sample configuration
 ```
 
 **Brief description of the configuration**.
-Like any other EII service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
+Like any other OEI service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
 
 config :  Contains eii messagebus output plugin (**"publisher"**). In the above sample configuration, the **"publisher"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
@@ -394,9 +391,9 @@ The plugin instance name is an additional key, kept into plugin configuration se
 
 Here, the value **'publisher'**  acts as a key in the file **[config.json](./config.json)**. For this key, there is configuration in the **'interfaces' and 'config'** sections of the file **[config.json](./config.json)**. So the value of**'instance_name'** acts as a connect/glue between the Telegraf configuration **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and the **ETCD configuration [config.json](./config.json)**
 
-## Advanced: Multiple plugin sections of EII message bus output plugin
+## Advanced: Multiple plugin sections of message bus output plugin
 
-Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus output plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
+Like any other Telegraf plugin user can keep multiple configuration sections of the message bus output plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
 
 *The Telegraf's ETCD configuration for the same is*
 
@@ -454,7 +451,7 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
 
 - User needs to modify interfaces section of **[config.json](./config.json)** to run in IPC mode as following:
 
-```
+```sh
     "interfaces": {
         "Subscribers": [
             {
@@ -513,7 +510,7 @@ For $ConfigInstance = 'Telegraf1'
 [config](./config)/Telegraf1/Telegraf1.conf (for production mode) and [config](./config)/Telegraf1/Telegraf1_devmode.conf (for developer mode)
 - The additional docker compose section which has to be manually added in the file 'docker-compose.yml' would be
  
-```
+```sh
   ia_telegraf1:
     depends_on:
       - ia_common
