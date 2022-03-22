@@ -56,8 +56,6 @@ spec:
       - name: ia-telegraf
         image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_telegraf:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          privileged: true
         volumeMounts:
         {{- if eq .Values.config.telegraf.IPC true}}
         - name: {{ .Values.volumes.eii_socket.name }}
