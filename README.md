@@ -549,15 +549,15 @@ For $ConfigInstance = 'Telegraf1'
       INFLUX_SERVER: ${HOST_IP}
       INFLUXDB_PORT: $INFLUXDB_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
+    ports:
+      - 65078:65078
     networks:
       - eii
     volumes:
       - "vol_temp_telegraf:/tmp/"
       - "vol_eii_socket:${SOCKET_DIR}"
-    secrets:
-      - ca_etcd
-      - etcd_Telegraf_cert
-      - etcd_Telegraf_key
+      - ./Certificates/Telegraf:/run/secrets/Telegraf
+      - ./Certificates/rootca:/run/secrets/rootca
 ```
 
  > **Note**: If user wants to add telegraf output plugin in telegraf instance, modify [config.json](config.json), [docker-compose.yml](docker-compose.yml) and telegraf configuration(.conf) files.
