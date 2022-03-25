@@ -36,8 +36,8 @@ func (pluginConfigObj *eiiMsgbusOutputPluginConfig) initConfig(emb *EiiMsgbus) e
 
 	var instanceConfig map[string]interface{}
 	var found bool
-	if instanceConfig, found = appConfig[emb.Instance_name].(map[string]interface{}); found == false {
-		return fmt.Errorf("Could not get the configuration for %v: %v", emb.Instance_name, err)
+	if instanceConfig, found = appConfig[emb.InstanceName].(map[string]interface{}); found == false {
+		return fmt.Errorf("Could not get the configuration for %v: %v", emb.InstanceName, err)
 	}
 
 	value := instanceConfig["profiling"].(string)
@@ -58,7 +58,7 @@ func (pluginConfigObj *eiiMsgbusOutputPluginConfig) initConfig(emb *EiiMsgbus) e
 		return fmt.Errorf("Fail to read DEV_MODE from etcd: %v", err)
 	}
 
-	pluginConfigObj.instanceName = emb.Instance_name
+	pluginConfigObj.instanceName = emb.InstanceName
 
 	return nil
 }

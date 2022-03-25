@@ -23,8 +23,8 @@ SOFTWARE.
 package eii_msgbus
 
 import (
-    eiicfgmgr "ConfigMgr/eiiconfigmgr"
-    eiimsgbus "EIIMessageBus/eiimsgbus"
+    eiicfgmgr "github.com/open-edge-insights/eii-configmgr-go/eiiconfigmgr"
+    eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
     "github.com/influxdata/telegraf"
     "github.com/influxdata/telegraf/plugins/outputs"
     "github.com/influxdata/telegraf/plugins/serializers"
@@ -34,7 +34,7 @@ import (
 
 
 type EiiMsgbus struct {
-    Instance_name   string `toml:"instance_name"`
+    InstanceName   string `toml:"instance_name"`
     pluginConfigObj eiiMsgbusOutputPluginConfig
     pluginPubObj    pluginPublisher
     Log             telegraf.Logger

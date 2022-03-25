@@ -63,7 +63,7 @@ func NewTestEiiMsgbus() *EiiMsgbus {
 	//acc := agent.NewAccumulator(tmMake, make(telegraf.Metric))
 	temp := EiiMsgbus{
 		Log:           testutil.Logger{},
-		Instance_name: "publisher1",
+		InstanceName: "publisher1",
 		parser:        parser,
 		ac:            agent.NewAccumulator(tmMake, make(chan telegraf.Metric, 100)),
 	}

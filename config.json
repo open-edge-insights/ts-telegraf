@@ -1,8 +1,7 @@
 {
     "config": {
+    "cert_type": ["zmq", "pem"],
         "influxdb": {
-            "username": "admin",
-            "password": "admin123",
             "dbname": "datain"
         },
 	"publisher": {

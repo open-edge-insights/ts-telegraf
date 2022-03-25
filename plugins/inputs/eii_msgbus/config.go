@@ -73,8 +73,8 @@ func (pluginConfigObj *eiiMsgbusInputPluginConfig) initConfig(emb *EiiMsgbus) er
 
 	var instanceConfig map[string]interface{}
 	var found bool
-	if instanceConfig, found = appConfig[emb.Instance_name].(map[string]interface{}); found == false {
-		return fmt.Errorf("Could not get the configuration for %v: %v", emb.Instance_name, err)
+	if instanceConfig, found = appConfig[emb.InstanceName].(map[string]interface{}); found == false {
+		return fmt.Errorf("Could not get the configuration for %v: %v", emb.InstanceName, err)
 	}
 
 	pluginConfigObj.mapOfPrefixToConfig = make(map[string]*topicPrefixConfig)
@@ -112,7 +112,7 @@ func (pluginConfigObj *eiiMsgbusInputPluginConfig) initConfig(emb *EiiMsgbus) er
 		return fmt.Errorf("Parsing dev mode failed: %v", err)
 	}
 
-	pluginConfigObj.instanceName = emb.Instance_name
+	pluginConfigObj.instanceName = emb.InstanceName
 
 	return nil
 }

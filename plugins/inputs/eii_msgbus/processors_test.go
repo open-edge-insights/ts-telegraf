@@ -23,7 +23,7 @@ SOFTWARE.
 package eii_msgbus
 
 import (
-	eiimsgbustype "EIIMessageBus/pkg/types"
+	eiimsgbustype "github.com/open-edge-insights/eii-messagebus-go/pkg/types"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"

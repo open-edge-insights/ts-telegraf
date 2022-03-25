@@ -1,40 +1,39 @@
-# Telegraf
-# Contents:
+# Contents
 
-1. [Telegraf in brief](#Telegraf-in-brief)
+- [Contents](#contents)
+  - [Telegraf](#telegraf)
+    - [Telegraf's default configuration](#telegrafs-default-configuration)
+    - [MQTT sample configuration and tool to test it](#mqtt-sample-configuration-and-tool-to-test-it)
+    - [Enabling message bus input plugin in Telegraf](#enabling-message-bus-input-plugin-in-telegraf)
+    - [Overview](#overview)
+    - [Advanced: Multiple plugin sections of OEI message bus input plugin](#advanced-multiple-plugin-sections-of-oei-message-bus-input-plugin)
+      - [Using input plugin](#using-input-plugin)
+    - [Enabling message bus Output plugin in Telegraf](#enabling-message-bus-output-plugin-in-telegraf)
+    - [Advanced: Multiple plugin sections of message bus output plugin](#advanced-multiple-plugin-sections-of-message-bus-output-plugin)
+    - [Run Telegraf Input output plugin in IPC mode](#run-telegraf-input-output-plugin-in-ipc-mode)
+    - [Optional: Adding multiple telegraf instances](#optional-adding-multiple-telegraf-instances)
 
-2. [Telegraf's default configuration](#Telegrafs-default-configuration)
+## Telegraf
 
-3. [MQTT sample configuration and tool to test it](#MQTT-sample-configuration-and-tool-to-test-it)
+Telegraf is a part of TICK stack (<https://www.influxdata.com/time-series-platform/>). This is a plugin based agent.  Telegraf has many input and output plugins. In OEI's basic configuration, it's being used for data ingestion. However OEI framework does not restrict Telegraf's any of the features. In OEI basic configuration uses Telegraf for data ingestion and sending it to influxdb.
 
-4. [Enabling EII message bus input plugin in Telegraf](#Enabling-EII-message-bus-input-plugin-in-Telegraf)
+>**Note:** In this document, you will find labels of 'Edge Insights for Industrial (EII)' for filenames, paths, code snippets, and so on. Consider the references of EII as Open Edge Insights (OEI). This is due to the product name change of EII as OEI.
 
-5. [Advanced: Multiple plugin sections of EII message bus input plugin](#Advanced-Multiple-plugin-sections-of-EII-message-bus-input-plugin)
+### Telegraf's default configuration
 
-6. [Enabling EII message bus Output plugin in Telegraf](#Enabling-EII-message-bus-output-plugin-in-Telegraf)
-
-7. [Advanced: Multiple plugin sections of EII message bus output plugin](#Advanced-Multiple-plugin-sections-of-EII-message-bus-output-plugin)
-
-8. [Optional: Adding multiple telegraf instances](#Optional-Adding-multiple-telegraf-instances)
-
-## Telegraf in brief
--------------------
-Telegraf is a part of TICK stack (https://www.influxdata.com/time-series-platform/). This is a plugin based agent.  Telegraf has many input and output plugins. In EII's basic configuration, it's being used for data ingestion. However EII framework does not restrict Telegraf's any of the features. In EII basic configuration uses Telegraf for data ingestion and sending it to influxdb. 
-
-## Telegraf's default configuration
 1. Telegraf starts with the default configuration which is present at [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf) (for the dev mode the name is 'Telegraf_devmode.conf'). By default the below plugins are enabled.
-	- 	MQTT input plugin (**[[inputs.mqtt_consumer]]**)
-	- 	EII message bus input plugin (**[[inputs.eii_msgbus]]**)
-	- 	Influxdb output plugin (**[[outputs.influxdb]]**)
+
+- MQTT input plugin (**[[inputs.mqtt_consumer]]**)
+- OEI message bus input plugin (**[[inputs.eii_msgbus]]**)
+- Influxdb output plugin (**[[outputs.influxdb]]**)
 
 Telegraf will be started using script 'telegraf_start.py. This script will get the configuration from ETCD first and then it will start the  Telegraf service by picking the right configuration depending on the developer/production mode. By default only single instance of Telegraf container runs (named 'ia_telegraf').
 
+### MQTT sample configuration and tool to test it
 
-## MQTT sample configuration and tool to test it.
+- To test with MQTT publisher in k8s helm environment, Please update 'MQTT_BROKER_HOST' Environment Variables in [values.yaml](./helm/values.yaml) with HOST IP address of the system where MQTT Broker is running.
 
-* To test with MQTT publisher in k8s helm environment, Please update 'MQTT_BROKER_HOST' Environment Variables in [values.yaml](./helm/values.yaml) with HOST IP address of the system where MQTT Broker is running.
-
-* To test with remote mqtt broker in docker environment, Please update 'MQTT_BROKER_HOST' Environment Variables in [docker-compose.yml](docker-compose.yml) with HOST IP address of the system where MQTT Broker is running.
+- To test with remote mqtt broker in docker environment, Please update 'MQTT_BROKER_HOST' Environment Variables in [docker-compose.yml](docker-compose.yml) with HOST IP address of the system where MQTT Broker is running.
 
 ```
   ia_telegraf:
@@ -43,86 +42,92 @@ Telegraf will be started using script 'telegraf_start.py. This script will get t
       MQTT_BROKER_HOST: '<HOST IP address of the system where MQTT Broker is running>'
 ```
 
-* Telegraf Instance can be configured with pressure point data ingestion. In the following example, the MQTT input plugin of Telegraf is configured to read pressure point data and stores into ‘point_pressure_data’ measurement.
+- Telegraf Instance can be configured with pressure point data ingestion. In the following example, the MQTT input plugin of Telegraf is configured to read pressure point data and stores into ‘point_pressure_data’ measurement.
 
-	```
-	# # Read metrics from MQTT topic(s)
-	[[inputs.mqtt_consumer]]
-	#   ## MQTT broker URLs to be used. The format should be scheme://host:port,
-	#   ## schema can be tcp, ssl, or ws.
-		servers = ["tcp://localhost:1883"]
-	#
-	#   ## MQTT QoS, must be 0, 1, or 2
-	#   qos = 0
-	#   ## Connection timeout for initial connection in seconds
-	#   connection_timeout = "30s"
-	#
-	#   ## Topics to subscribe to
-		topics = [
-		"pressure/simulated/0",
-		]
-		name_override = "point_pressure_data"
-		data_format = "json"
-	#
-	#   # if true, messages that can't be delivered while the subscriber is offline
-	#   # will be delivered when it comes back (such as on service restart).
-	#   # NOTE: if true, client_id MUST be set
-		persistent_session = false
-	#   # If empty, a random client ID will be generated.
-		client_id = ""
-	#
-	#   ## username and password to connect MQTT server.
-		username = ""
-		password = ""
+ ```
+ # # Read metrics from MQTT topic(s)
+ [[inputs.mqtt_consumer]]
+ #   ## MQTT broker URLs to be used. The format should be scheme://host:port,
+ #   ## schema can be tcp, ssl, or ws.
+  servers = ["tcp://localhost:1883"]
+ #
+ #   ## MQTT QoS, must be 0, 1, or 2
+ #   qos = 0
+ #   ## Connection timeout for initial connection in seconds
+ #   connection_timeout = "30s"
+ #
+ #   ## Topics to subscribe to
+  topics = [
+  "pressure/simulated/0",
+  ]
+  name_override = "point_pressure_data"
+  data_format = "json"
+ #
+ #   # if true, messages that can't be delivered while the subscriber is offline
+ #   # will be delivered when it comes back (such as on service restart).
+ #   # NOTE: if true, client_id MUST be set
+  persistent_session = false
+ #   # If empty, a random client ID will be generated.
+  client_id = ""
+ #
+ #   ## username and password to connect MQTT server.
+  username = ""
+  password = ""
 
-	```
+ ```
 
-* To start the mqtt-publisher with pressure data,
-   
+- To start the mqtt-publisher with pressure data,
+
    ```sh
-   $ cd ../tools/mqtt/publisher/
+   cd ../tools/mqtt/publisher/
    ```
-   change the command option in [docker-compose.yml](../tools/mqtt/publisher/docker-compose.yml) to:
-   
+
+  change the command option in [docker-compose.yml](../tools/mqtt/publisher/docker-compose.yml) to:
+
    ```sh
    ["--pressure", "10:30"]
    ```
-   Build and Run mqtt publisher:
-   
+
+  Build and Run mqtt publisher:
+
    ```sh
-   $ docker-compose up --build -d
+   docker-compose up --build -d
    ```
+
 please refer [tools/mqtt/publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt/README.md)
 
-## Enabling EII message bus input plugin in Telegraf
+### Enabling message bus input plugin in Telegraf
 
-The purpose of this enablement is to allow telegraf received data from EII message bus and storing it into influxdb that able to be scalable. 
+The purpose of this enablement is to allow telegraf received data from message bus and storing it into influxdb that able to be scalable.
 
-
-**Overview**
+### Overview
 
 The plugin subscribes to configured topic / topic prefixes. Plugin has component
 called subscriber which receives the data from eii message bus.
 After receiving the data, depending on configuration, the plugin process
-the data, either synchronously or asynchronously. 
-- In **synchronous** processing**, the receiver thread (thread which receives the data from EII message bus) is also resposible for the processing of the data (json parsing). After processing the previous data only, the receiver thread process next data available on the EII message bus. 
+the data, either synchronously or asynchronously.
+
+- In **synchronous** processing**, the receiver thread (thread which receives the data from message bus) is also resposible for the processing of the data (json parsing). After processing the previous data only, the receiver thread process next data available on the message bus.
 - In **asynchronous** processing the  receiver thread  receives the data and put it into the queue. There will be pool of threads which will be dequeing the data from the queue and processing it.
 
 **Guidelines for choosing the data processing options are**
+
 - Synchronous option: When the ingestion rate is consistent
 - Asynchronous options: There are two options
-1.  Topic specific queue+threadpool : Frequent spike in ingestion rate for a specific topic
-2.  Global queue+threadpool : Sometimes spike in ingestion rate for a specific topic
+
+1. Topic specific queue+threadpool : Frequent spike in ingestion rate for a specific topic
+2. Global queue+threadpool : Sometimes spike in ingestion rate for a specific topic
 
 **Configuration of the plugin**
 
 Configuration of the plugin is divided into two parts
+
 1. ETCD configuration
 2. Configuration in Telegraf.conf file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 **ETCD configuration**
 
-Since this is eii message bus plugin and so it's part of EII framework,
+Since this is eii message bus plugin and so it's part of OEI framework,
 message bus configuration and plugin's topic specific configuration is kept into etcd.
 Below is the sample configuration
 
@@ -149,7 +154,7 @@ Below is the sample configuration
         "Subscribers": [
             {
                 "Name": "default",
-				"Type": "zmq_tcp",
+                "Type": "zmq_tcp",
                 "EndPoint": "ia_zmq_broker:60515",
                 "Topics": [
                     "*"
@@ -160,29 +165,31 @@ Below is the sample configuration
     }
 }
 ```
+
 **Brief description of the configuration**.
 
-Like any other EII service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
+Like any other OEI service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
 
 config :  Contains the configuration of the influxdb (**"influxdb"**) and  eii messagebus input plugin (**"default"**). In the above sample configuration, the **"default"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 - topics_info : This is an array of topic prefix configuration, where user specifies, how the data from topic-prefix should be processed. Below is the  way every line in the topic information should be interpreted.
-	1. "topic-pfx1:temperature:10:2" : Process data from topic prefix 'topic-pfx1' asynchronously using the dedicated queue of length 10 and dedicated thread pool of size 2. And the processed data will be stored at measurement named 'temperature' in influxdb.
-	2. "topic-pfx2:pressure::" : Process data from topic prefix 'topic-pfx2' asynchronously using the global queue and global thread pool. And the processed data will be stored at measurement named 'pressure' in influxdb.
-	3. "topic-pfx3:humidity" : Process data synchronously. And the processed data will be stored at measurement named 'humidity' in influxdb.
 
-    *Note : In case, topic specific configuration is not mentioned, then by default, data  gets processed synchronously and measurement name would be, same as topic name.*
+ 1. "topic-pfx1:temperature:10:2" : Process data from topic prefix 'topic-pfx1' asynchronously using the dedicated queue of length 10 and dedicated thread pool of size 2. And the processed data will be stored at measurement named 'temperature' in influxdb.
+ 2. "topic-pfx2:pressure::" : Process data from topic prefix 'topic-pfx2' asynchronously using the global queue and global thread pool. And the processed data will be stored at measurement named 'pressure' in influxdb.
+ 3. "topic-pfx3:humidity" : Process data synchronously. And the processed data will be stored at measurement named 'humidity' in influxdb.
+
+ *Note : In case, topic specific configuration is not mentioned, then by default, data  gets processed synchronously and measurement name would be, same as topic name.*
 
 - queue_len : Global queue length.
 - num_worker : Global thread pool size.
 - profiling : This is to enable profiling mode of this plugin (value can be either "true" or "false"). In profiling mode every point will get the following information and will be kept into same measurement as that of point.
 
-	1. Total time spent in plugin (time in ns)
-	2. Time spent in queue (in case of asynchronous processing only and time in ns)
-	3. Time spend in json processing (time in ns)
-	4. The name of the thread pool and the thread id which processed the point.
+ 1. Total time spent in plugin (time in ns)
+ 2. Time spent in queue (in case of asynchronous processing only and time in ns)
+ 3. Time spend in json processing (time in ns)
+ 4. The name of the thread pool and the thread id which processed the point.
 
-	*Note: The name of the global thread pool is "GLOBAL". For a topic specific thread pool, the name is "for-$topic-name".*
+ *Note: The name of the global thread pool is "GLOBAL". For a topic specific thread pool, the name is "for-$topic-name".*
                                                                                                                                   |
 
 **Configuration at Telegraf.conf file**
@@ -194,17 +201,18 @@ The plugin instance name is an additional key, kept into plugin configuration se
     data_format = "json"
     json_strict = true
 
-Here, the value **'default'**  acts as a key in the file **[config.json](./config.json)**. For this key, there is configuration in the **'interfaces' and 'config'** sections of the file **[config.json](./config.json)**. So the value of** 'instance_name'** acts as a connect/glue between the Telegraf configuration **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and the **ETCD configuration [config.json](./config.json)**
+Here, the value **'default'**  acts as a key in the file **[config.json](./config.json)**. For this key, there is configuration in the **'interfaces' and 'config'** sections of the file **[config.json](./config.json)**. So the value of**'instance_name'** acts as a connect/glue between the Telegraf configuration **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and the **ETCD configuration [config.json](./config.json)**
 
-*Note: 
+*Note:
 Since it’s telegraf input plugin, the telegraf’s parser configuration
-has to be in Telegraf.conf file. The more information of the telegraf json parser plugin can be be found at https://github.com/influxdata/telegraf/tree/master/plugins/parsers/json.*
+has to be in Telegraf.conf file. The more information of the telegraf json parser plugin can be be found at <https://github.com/influxdata/telegraf/tree/master/plugins/parsers/json>.*
 In case if there are multiple telegraf instances, then the location of the Telegraf configuration files would be different. For more details please refer the section [Optional: Adding multiple telegraf instance](#Optional-Adding-multiple-telegraf-instances)
 
-## Advanced: Multiple plugin sections of EII message bus input plugin
-Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus input plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
+### Advanced: Multiple plugin sections of OEI message bus input plugin
 
-Let's have an example for the same. Let's assume there are two EII apps, one with the AppName "EII_APP1" and another with the AppName "EII_APP2", which are publishing the data to eii message bus.
+Like any other Telegraf plugin user can keep multiple configuration sections of the message bus input plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
+
+Let's have an example for the same. Let's assume there are two OEI apps, one with the AppName "EII_APP1" and another with the AppName "EII_APP2", which are publishing the data to eii message bus.
 *The Telegraf's ETCD configuration for the same is*
 
 ```json
@@ -240,7 +248,7 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
                "*"
             ],
             "Type":"zmq_tcp",
-			"PublisherAppName": "EII_APP1"
+            "PublisherAppName": "EII_APP1"
          },
          {
             "Name":"subscriber2",
@@ -251,12 +259,13 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
                "topic-pfx23"
             ],
             "Type":"zmq_tcp",
-			"PublisherAppName": "EII_APP2"
+            "PublisherAppName": "EII_APP2"
          }
       ]
    }
 }
 ```
+
 *The Telegraf.conf configuration sections for the same is*
 
     [[inputs.eii_msgbus]]
@@ -269,11 +278,11 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
     data_format = "json"
     json_strict = true
 
-### Using input plugin 
- 
-  * By default EII message bus input plugin is disabled. To Configure the EII input plugin, uncomment the following lines in **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and  **[config/Telegraf/Telegraf_devmode.conf](./config/Telegraf/Telegraf_devmode.conf)**
+#### Using input plugin
 
-    ```
+- By default message bus input plugin is disabled. To Configure the OEI input plugin, uncomment the following lines in **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and  **[config/Telegraf/Telegraf_devmode.conf](./config/Telegraf/Telegraf_devmode.conf)**
+
+    ```sh
     [[inputs.eii_msgbus]]
     instance_name = "default"
     data_format = "json"
@@ -288,8 +297,10 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
     ]
     json_name_key = ""
     ```
-  * Edit [config.json](config.json) to add EII message bus input plugin.
-  ```
+
+- Edit [config.json](config.json) to add message bus input plugin.
+
+  ```sh
   {
       "config": {
           ...
@@ -322,19 +333,19 @@ Let's have an example for the same. Let's assume there are two EII apps, one wit
   }
   ```
 
-
-## Enabling EII message bus Output plugin in Telegraf
+### Enabling message bus Output plugin in Telegraf
 
 **Purpose**
 Receiving the data from Telegraf Input Plugin and publish data to eii msgbus.
 
 **Configuration of the plugin**
 Configuration of the plugin is divided into two parts
+
 1. ETCD configuration
 2. Configuration in Telegraf.conf file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 **ETCD configuration**
-Since this is eii message bus plugin and so it’s part of EII framework, message bus configuration and plugin’s topic specific configuration is kept into etcd.
+Since this is eii message bus plugin and so it’s part of OEI framework, message bus configuration and plugin’s topic specific configuration is kept into etcd.
 Below is the sample configuration
 
 ```json
@@ -364,13 +375,12 @@ Below is the sample configuration
 ```
 
 **Brief description of the configuration**.
-Like any other EII service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
+Like any other OEI service Telegraf has 'config' and 'interfaces'  sections.  "interfaces" are the eii interface details. Let's have more information of "config" section.
 
 config :  Contains eii messagebus output plugin (**"publisher"**). In the above sample configuration, the **"publisher"** is an instance name. This instance name is referenced from the Telegraf's configuration file [config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)
 
 - measurements : This is an array of measurements configuration, where user specifies, which measurement data should be published in msgbus.
 - profiling : This is to enable profiling mode of this plugin (value can be either "true" or "false").
-
 
 **Configuration at Telegraf.conf file**
 
@@ -379,11 +389,11 @@ The plugin instance name is an additional key, kept into plugin configuration se
     [[outputs.eii_msgbus]]
     instance_name = "publisher"
 
+Here, the value **'publisher'**  acts as a key in the file **[config.json](./config.json)**. For this key, there is configuration in the **'interfaces' and 'config'** sections of the file **[config.json](./config.json)**. So the value of**'instance_name'** acts as a connect/glue between the Telegraf configuration **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and the **ETCD configuration [config.json](./config.json)**
 
-Here, the value **'publisher'**  acts as a key in the file **[config.json](./config.json)**. For this key, there is configuration in the **'interfaces' and 'config'** sections of the file **[config.json](./config.json)**. So the value of** 'instance_name'** acts as a connect/glue between the Telegraf configuration **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** and the **ETCD configuration [config.json](./config.json)**
+### Advanced: Multiple plugin sections of message bus output plugin
 
-## Advanced: Multiple plugin sections of EII message bus output plugin
-Like any other Telegraf plugin user can keep multiple configuration sections of the EII message bus output plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
+Like any other Telegraf plugin user can keep multiple configuration sections of the message bus output plugin in the **[config/Telegraf/Telegraf.conf](./config/Telegraf/Telegraf.conf)** file.
 
 *The Telegraf's ETCD configuration for the same is*
 
@@ -428,6 +438,7 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
 }
 
 ```
+
 *The Telegraf.conf configuration sections for the same is*
 
     [[outputs.eii_msgbus]]
@@ -436,10 +447,11 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
     [[outputs.eii_msgbus]]
     instance_name = "publisher2"
 
-## Run Telegraf Input output plugin in IPC mode
+### Run Telegraf Input output plugin in IPC mode
+
 - User needs to modify interfaces section of **[config.json](./config.json)** to run in IPC mode as following:
 
-```
+```sh
     "interfaces": {
         "Subscribers": [
             {
@@ -475,12 +487,14 @@ Like any other Telegraf plugin user can keep multiple configuration sections of 
     }
 
 ```
-## Optional: Adding multiple telegraf instances
-- User can add multiple instances of Telegarf. For that user needs to add additional environment variable named 'ConfigInstance' in docker-compose.yml file. For  every additional telegraf instance, there has to be additional compose section in the docker-compose.yml file. 
-- The configuration for every instance has to be in the telegraf image. The standard to be followed is described as below. 
 
-    For instance named $ConfigInstance the telegraf configuration has to be kept in the repository at 
-    [config](./config)/$ConfigInstance/$ConfigInstance.conf (for production mode) and 
+### Optional: Adding multiple telegraf instances
+
+- User can add multiple instances of Telegarf. For that user needs to add additional environment variable named 'ConfigInstance' in docker-compose.yml file. For  every additional telegraf instance, there has to be additional compose section in the docker-compose.yml file.
+- The configuration for every instance has to be in the telegraf image. The standard to be followed is described as below.
+
+    For instance named $ConfigInstance the telegraf configuration has to be kept in the repository at
+    [config](./config)/$ConfigInstance/$ConfigInstance.conf (for production mode) and
     [config](./config)/$ConfigInstance/$ConfigInstance_devmode.conf (for developer mode).
 
     The same files will be available inside the respective container at
@@ -495,8 +509,8 @@ For $ConfigInstance = 'Telegraf1'
 - The location of the Telegraf configuration would be
 [config](./config)/Telegraf1/Telegraf1.conf (for production mode) and [config](./config)/Telegraf1/Telegraf1_devmode.conf (for developer mode)
 - The additional docker compose section which has to be manually added in the file 'docker-compose.yml' would be
-	
-```
+ 
+```sh
   ia_telegraf1:
     depends_on:
       - ia_common
@@ -513,7 +527,7 @@ For $ConfigInstance = 'Telegraf1'
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
     container_name: ia_telegraf1
     hostname: ia_telegraf1
-    image: ${DOCKER_REGISTRY}ia_telegraf:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_telegraf:${EII_VERSION}
     restart: unless-stopped
     ipc: "none"
     security_opt:
@@ -531,23 +545,25 @@ For $ConfigInstance = 'Telegraf1'
       NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
-      MQTT_BROKER_HOST: 'ia_mqtt_broker'
-      INFLUX_SERVER: 'ia_influxdbconnector'
+      MQTT_BROKER_HOST: ${HOST_IP}
+      INFLUX_SERVER: ${HOST_IP}
       INFLUXDB_PORT: $INFLUXDB_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
+    ports:
+      - 65078:65078
     networks:
       - eii
     volumes:
       - "vol_temp_telegraf:/tmp/"
       - "vol_eii_socket:${SOCKET_DIR}"
-    secrets:
-      - ca_etcd
-      - etcd_Telegraf_cert
-      - etcd_Telegraf_key
+      - ./Certificates/Telegraf:/run/secrets/Telegraf
+      - ./Certificates/rootca:/run/secrets/rootca
 ```
+
  > **Note**: If user wants to add telegraf output plugin in telegraf instance, modify [config.json](config.json), [docker-compose.yml](docker-compose.yml) and telegraf configuration(.conf) files.
  >
  > 1. Add publisher configuration in [config.json](config.json):
+ >
  > ```
  >   {
  >       "config": {
@@ -578,7 +594,9 @@ For $ConfigInstance = 'Telegraf1'
  >       }
  >   }
  >   ```
- >   Example:
+ >
+ > Example:
+ >
  >   ```
  >   {
  >       "config": {
@@ -609,14 +627,18 @@ For $ConfigInstance = 'Telegraf1'
  >       }
  >   }
  >   ```
+ >
  >   2. Expose "publisher port" in [docker-compose.yml](docker-compose.yml) file:
+ >
  >   ```
  >     ia_telegraf<ConfigInstance number>:
  >       ...
  >       ports:
  >         - <publisher port>:<publisher port>
  >   ```
- >   Example:
+ >
+ > Example:
+ >
  >   ```
  >     ia_telegraf<ConfigInstance number>:
  >       ...
@@ -624,16 +646,16 @@ For $ConfigInstance = 'Telegraf1'
  >         - 65078:65078
  >   ```
  >
- >   3. Add eii_msgbus output plugin in telegraf instance config file [config](./config)/$ConfigInstance/$ConfigInstance.conf (for production mode) and 
+ >   3. Add eii_msgbus output plugin in telegraf instance config file [config](./config)/$ConfigInstance/$ConfigInstance.conf (for production mode) and
  >   [config](./config)/$ConfigInstance/$ConfigInstance_devmode.conf (for developer mode).
  >
  >     [[outputs.eii_msgbus]]
  >     instance_name = "<publisher instance>"
  >
- >   Example:
- >   For $ConfigInstance = 'Telegraf1'
- >   
- >   User needs to add following section in [config](./config)/Telegraf1/Telegraf1.conf (for production mode) and [config](./config)/Telegraf1/Telegraf1_devmode.conf (for developer mode) 
+ > Example:
+ > For $ConfigInstance = 'Telegraf1'
+ >
+ > User needs to add following section in [config](./config)/Telegraf1/Telegraf1.conf (for production mode) and [config](./config)/Telegraf1/Telegraf1_devmode.conf (for developer mode)
  >
  >     [[outputs.eii_msgbus]]
  >     instance_name = "publisher1"
@@ -641,35 +663,34 @@ For $ConfigInstance = 'Telegraf1'
 
 - After that, user will need to run the **builder.py** script command to allow the changes of the dockerfile take place.
 
-    ```    
-    $ cd [WORK_DIR]/IEdgeInsights/build
-    $ python3 builder.py
+    ```
+    cd [WORK_DIR]/IEdgeInsights/build
+    python3 builder.py
     ```
 
 - User will need to provision, build and bring up all the container again by using below command.
 
     ```
-    $ cd [WORK_DIR]/IEdgeInsights/build/provision
-    $ sudo ./provision.sh ../docker-compose.yml
-    $ cd ../
-    $ docker-compose -f docker-compose-build.yml build
-    $ docker-compose up -d
+    cd [WORK_DIR]/IEdgeInsights/build/
+    docker-compose -f docker-compose-build.yml build
+    docker-compose up -d ia_configmgr_agent
+    # Check `$ docker logs -f ia_configmgr_agent` if Provision is Done
+    docker-compose up -d
     ```
 
 - Based on above example, user can check the telegraf service will have multiple  container as by using docker ps command.
 
-**Note**: It's been practice followed by many users, to keep the configuration in a modular way. One way to achieve the same could be keeping the additional configuration inside 'Telegraf/config/$ConfigInstance/telegraf.d. For example:
+**Note:** It's been practice followed by many users, to keep the configuration in a modular way. One way to achieve the same could be keeping the additional configuration inside 'Telegraf/config/$ConfigInstance/telegraf.d. For example:
 
 create a directory 'telegraf.d' inside 'Telegraf/config/config/$ConfigInstance' :
-   
+
    ```
-   $ mkdir config/$ConfigInstance/telegraf.d
-   $ cd config/$ConfigInstance/telegraf.d
+   mkdir config/$ConfigInstance/telegraf.d
+   cd config/$ConfigInstance/telegraf.d
   ```
 
 keep additional configuration files inside that directory and pass the whole command to start the Telegraf in docker-compose.yml file as following:
-	
+ 
 ```
-	command: ["telegraf -config=/etc/Telegraf/$ConfigInstance/$ConfigInstance.conf -config-directory=/etc/Telegraf/$ConfigInstance/telegraf.d"]
+ command: ["telegraf -config=/etc/Telegraf/$ConfigInstance/$ConfigInstance.conf -config-directory=/etc/Telegraf/$ConfigInstance/telegraf.d"]
 ```
-

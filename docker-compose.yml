@@ -38,7 +38,7 @@ services:
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
     container_name: ia_telegraf
     hostname: ia_telegraf
-    image: ${DOCKER_REGISTRY}ia_telegraf:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_telegraf:${EII_VERSION}
     restart: unless-stopped
     ipc: "none"
     security_opt:
@@ -49,16 +49,17 @@ services:
       interval: 5m    
     environment:
       AppName: "Telegraf"
-      CertType: "pem,zmq"
       DEV_MODE: ${DEV_MODE}
       no_proxy: "${ETCD_HOST},ia_influxdbconnector"
       NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
-      MQTT_BROKER_HOST: 'ia_mqtt_broker'
-      INFLUX_SERVER: 'ia_influxdbconnector'
+      MQTT_BROKER_HOST: ${HOST_IP}
+      INFLUX_SERVER: ${HOST_IP}
       INFLUXDB_PORT: $INFLUXDB_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
+      INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}
+      INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}
     ports:
       - 65077:65077
     networks:
@@ -66,10 +67,8 @@ services:
     volumes:
       - "vol_temp_telegraf:/tmp/"
       - "vol_eii_socket:${SOCKET_DIR}"
-    secrets:
-      - ca_etcd
-      - etcd_Telegraf_cert
-      - etcd_Telegraf_key
+      - ./Certificates/Telegraf:/run/secrets/Telegraf:ro
+      - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
 
 volumes:
   vol_temp_telegraf:
@@ -79,8 +78,3 @@ volumes:
       o: "size=5K"
       device: tmpfs
 
-secrets:
-  etcd_Telegraf_cert:
-    file: provision/Certificates/Telegraf/Telegraf_client_certificate.pem
-  etcd_Telegraf_key:
-    file: provision/Certificates/Telegraf/Telegraf_client_key.pem

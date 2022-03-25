@@ -32,11 +32,6 @@ LABEL description="Telegraf image"
 
 WORKDIR /app
 
-ARG TELEGRAF_GO_VERSION
-RUN wget -q --show-progress  https://golang.org/dl/go${TELEGRAF_GO_VERSION}.linux-amd64.tar.gz && \
-    rm -rf /usr/local/go && \
-    tar -C /usr/local -xzf go${TELEGRAF_GO_VERSION}.linux-amd64.tar.gz
-
 COPY . ./Telegraf
 
 RUN mkdir /etc/Telegraf && \
@@ -53,27 +48,45 @@ RUN mv Telegraf/schema.json $ARTIFACTS/telegraf && \
 
 ARG CMAKE_INSTALL_PREFIX
 ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+
+# Install libzmq
+RUN rm -rf deps && \
+    mkdir -p deps && \
+    cd deps && \
+    wget -q --show-progress https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.tar.gz -O zeromq.tar.gz && \
+    tar xf zeromq.tar.gz && \
+    cd zeromq-4.3.4 && \
+    ./configure --prefix=${CMAKE_INSTALL_PREFIX} && \
+    make install
+
+# Install cjson
+RUN rm -rf deps && \
+    mkdir -p deps && \
+    cd deps && \
+    wget -q --show-progress https://github.com/DaveGamble/cJSON/archive/v1.7.12.tar.gz -O cjson.tar.gz && \
+    tar xf cjson.tar.gz && \
+    cd cJSON-1.7.12 && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_PREFIX}/include -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} .. && \
+    make install
+
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 
-COPY --from=common /eii/common/libs/EIIMessageBus/go/EIIMessageBus /usr/local/go/src/EIIMessageBus
-COPY --from=common /eii/common/libs/ConfigMgr/go/ConfigMgr /usr/local/go/src/ConfigMgr
+COPY --from=common /eii/common/libs/EIIMessageBus/go/EIIMessageBus /src/EIIMessageBus
+COPY --from=common /eii/common/libs/ConfigMgr/go/ConfigMgr /src/ConfigMgr
 
 ENV PATH="$PATH:/usr/local/go/bin" \
     PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" \
     LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib"
 
 # These flags are needed for enabling security while compiling and linking with cpuidcheck in golang
-ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -Werror=format-security -fstack-protector-strong -fPIC" \
+ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -Werror=format-security -fstack-protector-strong -fno-strict-overflow -fno-delete-null-pointer-checks -fwrapv -fPIC" \
     CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
 ARG TELEGRAF_SOURCE_TAG
-RUN mkdir /src/ && \
-    cd /src/ && \
-    git clone https://github.com/influxdata/telegraf.git && \
-    cd telegraf && \
-    git fetch --tags && \
-    git checkout tags/${TELEGRAF_SOURCE_TAG} -b ${TELEGRAF_SOURCE_TAG}-branch
+RUN cd /src/ && \
+    git clone --single-branch -b ${TELEGRAF_SOURCE_TAG} https://github.com/influxdata/telegraf.git
 
 ENV TELEGRAF_SRC_DIR /src/telegraf
 
@@ -90,8 +103,12 @@ RUN patch -p0 $TELEGRAF_SRC_DIR/plugins/inputs/all/all.go -i /tmp/all.patch && \
 COPY ./plugins/outputs/all/all.patch /tmp/all.patch
 COPY ./plugins/outputs/eii_msgbus /src/telegraf/plugins/outputs/eii_msgbus
 
-RUN patch -p0 $TELEGRAF_SRC_DIR/plugins/outputs/all/all.go -i /tmp/all.patch && \ 
+RUN patch -p0 $TELEGRAF_SRC_DIR/plugins/outputs/all/all.go -i /tmp/all.patch && \
     rm -f /tmp/all.patch
+
+RUN echo "replace github.com/open-edge-insights/eii-configmgr-go => ../ConfigMgr/" >> $TELEGRAF_SRC_DIR/go.mod
+
+RUN echo "replace github.com/open-edge-insights/eii-messagebus-go => ../EIIMessageBus/" >> $TELEGRAF_SRC_DIR/go.mod
 
 RUN cd $TELEGRAF_SRC_DIR && \
     make && \
@@ -101,6 +118,7 @@ RUN cd $TELEGRAF_SRC_DIR && \
 FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
 WORKDIR /app
 ARG ARTIFACTS
+RUN rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/Telegraf/ /etc/Telegraf/
 COPY --from=builder $ARTIFACTS/telegraf .
 COPY --from=builder $ARTIFACTS/bin/telegraf .local/bin/
@@ -118,7 +136,8 @@ RUN groupadd $EII_USER_NAME -g $EII_UID && \
 ARG CMAKE_INSTALL_PREFIX
 ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 ENV PYTHONPATH $PYTHONPATH:/app/.local/lib/python3.8/site-packages:/app
-COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=builder ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=builder ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
 COPY --from=common /eii/common/util/*.py util/
 COPY --from=common /root/.local/lib .local/lib
 
